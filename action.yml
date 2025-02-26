@@ -59,6 +59,8 @@ runs:
       id: build-lean
       continue-on-error: true
       uses: leanprover/lean-action@v1
+      with:
+        build-args: "--log-level=warning"
 
     - name: Record outcome
       id: record-outcome
@@ -75,6 +77,9 @@ runs:
         fi
       shell: bash
 
+    # ------------------------- #
+    # when update is successful #
+    # ------------------------- #
     - name: Open PR if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'pr'
       uses: peter-evans/create-pull-request@v7
@@ -98,8 +103,7 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
-        BODY: |
-          Some more useful info could be added here...
+        BODY: ""
       shell: bash
 
     - name: Commit update if the updated lean build was successful
@@ -107,7 +111,10 @@ runs:
       uses: EndBug/add-and-commit@v9.1.4
       with:
         default_author: github_actions
-
+  
+    # ----------------- #
+    # when update fails #
+    # ----------------- #
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: |
