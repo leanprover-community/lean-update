@@ -24,6 +24,12 @@ inputs:
       Default: "lean-toolchain"
     required: false
     default: "lean-toolchain"
+  build_args:
+    description: |
+      This GitHub Action uses leanprover/lean-action to build and test the repository.
+      This parameter determines what to pass to the build-args argument of lean-action.
+    required: false
+    default: "--log-level=warning"
   token:
     description: |
       A Github token to be used for committing
@@ -63,7 +69,7 @@ runs:
       continue-on-error: true
       uses: leanprover/lean-action@v1
       with:
-        build-args: "--log-level=warning"
+        build-args: ${{ inputs.build_args }}
 
     - name: Record outcome
       id: record-outcome
