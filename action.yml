@@ -6,9 +6,9 @@ inputs:
     description: |
       What to do when an update is available and the build is successful.
       Allowed values: "silent", "commit", "issue" or "pr".
-      Default: "silent".
+      Default: "pr".
     required: true
-    default: "silent"
+    default: "pr"
   on_update_fails:
     description: |
       What to do when an update is available and the build fails.
