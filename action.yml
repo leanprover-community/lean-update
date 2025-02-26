@@ -16,6 +16,13 @@ inputs:
       Default: "silent".
     required: true
     default: "silent"
+  what_to_update:
+    description: |
+      Specifies which files, when updated by executing `lake update`, are considered as updated.
+      Allowed values: "lean-toolchain" or "lake-manifest.json".
+      Default: "lean-toolchain"
+    required: false
+    default: "lean-toolchain"
   token:
     description: |
       A Github token to be used for committing
@@ -48,10 +55,13 @@ runs:
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
+        Write-Host "info: Checking for changes of $env:WHAT_TO_UPDATE"
         $result = & "${{ github.action_path }}/scripts/checkChanges.ps1" | ConvertFrom-Json
         echo "files_changed=$($result.files_changed)" >> "$env:GITHUB_OUTPUT"
         echo "changed_files=$($result.changed_files)" >> "$env:GITHUB_OUTPUT"
         Write-Host "info: $( $result | Out-String)"
+      env:
+        WHAT_TO_UPDATE: ${{ inputs.what_to_update }}
       shell: pwsh
 
     - name: Try to build lean if something was updated
