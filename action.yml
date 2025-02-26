@@ -65,17 +65,17 @@ runs:
     - name: Record outcome
       id: record-outcome
       run: |
-        if "${{steps.check-update.outputs.files_changed == 'false'}}" ; then
-          echo "No update available"
-          echo "outcome=no-update" >> "$GITHUB_OUTPUT"
-        elif "${{steps.build-lean.outcome == 'success'}}"; then
-          echo "Update available and build successful"
-          echo "outcome=update-success" >> "$GITHUB_OUTPUT";
-        elif "${{steps.build-lean.outcome == 'failure'}}"; then
-          echo "Update available but build fails"
-          echo "outcome=update-fail" >> "$GITHUB_OUTPUT"
-        fi
-      shell: bash
+        if ("${{steps.check-update.outputs.files_changed}}" -eq "false") {
+          Write-Host "No update available"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=no-update"
+        } elseif ("${{steps.build-lean.outcome}}" -eq "success") {
+          Write-Host "Update available and build successful"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-success"
+        } elseif ("${{steps.build-lean.outcome}}" -eq "failure") {
+          Write-Host "Update available but build fails"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-fail"
+        }
+      shell: pwsh
 
     # ------------------------- #
     # when update is successful #
