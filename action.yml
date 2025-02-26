@@ -78,7 +78,6 @@ runs:
         if ("${{steps.check-update.outputs.files_changed}}" -eq "false") {
           Write-Host "No update available"
           Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=no-update"
-          exit 0
         } elseif ("${{steps.build-lean.outcome}}" -eq "success") {
           Write-Host "Update available and build successful"
           Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-success"
