@@ -47,7 +47,7 @@ runs:
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
-        OUTCOME=$(bash ${{ github.action_path }}/check-changes.sh)
+        OUTCOME=$(bash ${{ github.action_path }}/scripts/CheckChanges.ps1)
         echo "$OUTCOME" >> "$GITHUB_OUTPUT"
         echo "info: $OUTCOME"
       shell: bash
