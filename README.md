@@ -6,6 +6,5 @@ A GitHub Action that attempts to update Lean and dependencies of a Lean project.
 
 I am using this GitHub Action in the following repository. This might be helpful as a reference.
 
-* <https://github.com/Seasawher/mathlib4-help>
-<!-- * <https://github.com/Seasawher/SelectionSort.lean>
-* <https://github.com/lean-ja/lean99> -->
+* <https://github.com/Seasawher/mathlib4-help> This repository runs this action daily to update the output whenever mathlib is updated.
+* <https://github.com/lean-ja/lean-by-example> This repository verifies that code examples work with the latest mathlib to ensure their correctness. However, since updating mathlib requires rebuilding it in the local development environment, PRs are only created when `lean-toolchain` is updated.
