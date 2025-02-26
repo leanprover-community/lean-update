@@ -101,16 +101,14 @@ runs:
           $bullet_list += "- $file`n"
         }
         $body = "Files changed in update:`n$bullet_list"
-        gh issue create \
-          --title "$TITLE" \
-          --label "$LABELS" \
-          --body "$body"
+        gh issue create --title "$env:TITLE" --label "$env:LABELS" --body $body
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
-      shell: bash
+        LABELS: "auto-update-lean"
+      shell: pwsh
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit'
