@@ -28,11 +28,12 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Update lean-toolchain
-      run: ${{ github.action_path }}/scripts/getLatest.ps1
-      env:
-        GH_TOKEN: ${{ github.token }}
-      shell: pwsh
+    # Running `lake update` also updates lean-toolchain, so this is not needed
+    # - name: Update lean-toolchain
+    #   run: ${{ github.action_path }}/scripts/getLatest.ps1
+    #   env:
+    #     GH_TOKEN: ${{ github.token }}
+    #   shell: pwsh
 
     - name: Install elan
       run: |
