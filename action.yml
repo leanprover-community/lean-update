@@ -68,6 +68,7 @@ runs:
         if ("${{steps.check-update.outputs.files_changed}}" -eq "false") {
           Write-Host "No update available"
           Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=no-update"
+          exit 0
         } elseif ("${{steps.build-lean.outcome}}" -eq "success") {
           Write-Host "Update available and build successful"
           Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-success"
@@ -94,16 +95,21 @@ runs:
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue'
       run: |
+        $files = "${{ steps.check-update.outputs.changed_files }}"
+        $bullet_list = ""
+        foreach ($file in $files -split ' ') {
+          $bullet_list += "- $file`n"
+        }
+        $body = "Files changed in update:`n$bullet_list"
         gh issue create \
           --title "$TITLE" \
           --label "$LABELS" \
-          --body "$BODY"
+          --body "$body"
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
-        BODY: ""
       shell: bash
 
     - name: Commit update if the updated lean build was successful
