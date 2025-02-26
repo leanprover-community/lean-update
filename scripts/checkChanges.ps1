@@ -5,10 +5,8 @@ $changedFiles = @()
 if ($leanToolchainDiff) { $changedFiles += "lean-toolchain" }
 if ($lakeManifestDiff) { $changedFiles += "lake-manifest.json" }
 
-if ($changedFiles.Count -gt 0) {
-    Write-Output "files_changed=true"
-    Write-Output "changed_files=$( $changedFiles -join ', ' )"
-} else {
-    Write-Output "files_changed=false"
-    Write-Output "changed_files="
-}
+$result = @{
+    files_changed = $changedFiles.Count -gt 0
+    changed_files = $changedFiles
+} | ConvertTo-Json -Compress
+Write-Output $result
