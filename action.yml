@@ -113,15 +113,15 @@ runs:
         $files = "${{ steps.check-update.outputs.changed_files }}"
         $bullet_list = ""
         foreach ($file in $files -split ' ') {
-          $bullet_list += "- $file\n"
+          $bullet_list += "- $file`n"
         }
-        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.\nFiles changed in update:\n$bullet_list"
-        gh issue create --title "$TITLE" --label "$LABELS" --body $body
+        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.`nFiles changed in update:`n$bullet_list"
+        gh issue create --title "$env:TITLE" --label "$env:LABELS" --body $body
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        TITLE: Updates available but manual intervention required
-        LABELS: bug
+        TITLE: "Updates available but manual intervention required"
+        LABELS: "bug"
       shell: pwsh
 
     - name: Action fails if the updated lean build fails
