@@ -1,6 +1,6 @@
 name: "Lean update"
 description: "Attempts to update lean and dependencies of a lean project"
-author: "Oliver Butterley"
+author: "Oliver Butterley, Asei Inoue(Seasawher)"
 inputs:
   on_update_succeeds:
     description: |
