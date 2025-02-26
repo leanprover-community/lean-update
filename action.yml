@@ -91,7 +91,7 @@ runs:
     # when update is successful #
     # ------------------------- #
     - name: Open PR if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && $env:ON_UPDATE_SUCCEEDS == 'pr' && $env:FILE_TO_UPDATE_CHANGED == 'true'
+      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'pr' && steps.check-update.outputs.file_to_update_changed == 'true'
       uses: peter-evans/create-pull-request@v7
       with:
         title: "Updates available and ready to merge"
@@ -100,12 +100,9 @@ runs:
         branch-suffix: random
         branch: auto-update/patch
         labels: "auto-update-lean"
-      env:
-        ON_UPDATE_SUCCEEDS: ${{ inputs.on_update_succeeds }}
-        FILE_TO_UPDATE_CHANGED: ${{ steps.check-update.outputs.file_to_update_changed }}
 
     - name: Open issue if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && $env:ON_UPDATE_SUCCEEDS == 'issue' && $env:FILE_TO_UPDATE_CHANGED == 'true'
+      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.file_to_update_changed == 'true'
       run: |
         $files = "${{ steps.check-update.outputs.changed_files }}"
         $bullet_list = ""
@@ -120,12 +117,10 @@ runs:
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
         LABELS: "auto-update-lean"
-        ON_UPDATE_SUCCEEDS: ${{ inputs.on_update_succeeds }}
-        FILE_TO_UPDATE_CHANGED: ${{ steps.check-update.outputs.file_to_update_changed }}
       shell: pwsh
 
     - name: Commit update if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && $env:ON_UPDATE_SUCCEEDS == 'commit' && $env:FILE_TO_UPDATE_CHANGED == 'true'
+      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.file_to_update_changed == 'true'
       uses: EndBug/add-and-commit@v9.1.4
       with:
         default_author: github_actions
