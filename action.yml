@@ -113,9 +113,9 @@ runs:
         $files = "${{ steps.check-update.outputs.changed_files }}"
         $bullet_list = ""
         foreach ($file in $files -split ' ') {
-          $bullet_list += "- $file`n"
+          $bullet_list += "- $file\n"
         }
-        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.`n`nFiles changed in update:`n$bullet_list"
+        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.\nFiles changed in update:\n$bullet_list"
         gh issue create --title "$TITLE" --label "$LABELS" --body $body
       env:
         GH_TOKEN: ${{ inputs.token }}
