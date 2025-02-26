@@ -110,19 +110,19 @@ runs:
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: |
-        gh issue create \
-          --title "$TITLE" \
-          --label "$LABELS" \
-          --body "$BODY"
+        $files = "${{ steps.check-update.outputs.changed_files }}"
+        $bullet_list = ""
+        foreach ($file in $files -split ' ') {
+          $bullet_list += "- $file`n"
+        }
+        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.`n`nFiles changed in update:`n$bullet_list"
+        gh issue create --title "$TITLE" --label "$LABELS" --body $body
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available but manual intervention required
-        # LABELS: bug
-        BODY: |
-          Try `lake update` and then investigate why this update causes the lean build to fail.
-          Files changed in update: ${{ steps.check-update.outputs.changed_files }}
-      shell: bash
+        LABELS: bug
+      shell: pwsh
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
