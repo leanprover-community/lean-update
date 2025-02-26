@@ -8,9 +8,9 @@ $whatToUpdateDiff = git diff -w $whatToUpdate
 
 # If the specified file has changed, set files_changed to true
 if ($whatToUpdateDiff) {
-    $files_changed = $true
+    $file_to_update_changed = $true
 } else {
-    $files_changed = $false
+    $file_to_update_changed = $false
 }
 
 # Check all candidate files for changes
@@ -24,8 +24,10 @@ foreach ($candidate in $allCandidates) {
 
 # Create result object
 $result = @{
-    files_changed = $files_changed
+    files_changed = $changedFiles.Count -gt 0  # Return true if any file has changed
+    file_to_update_changed = $file_to_update_changed  # Return true if the specified file has changed
     changed_files = $changedFiles  # Return all changed files
 } | ConvertTo-Json -Compress
 
+Write-Host "info: $( $result | Out-String)"
 Write-Output $result
