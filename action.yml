@@ -47,9 +47,10 @@ runs:
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
-        $OUTCOME = & "${{ github.action_path }}/scripts/checkChanges.ps1"
-        Write-Output "$OUTCOME" >> "$env:GITHUB_OUTPUT"
-        Write-Output "info: $OUTCOME"
+        $result = & "${{ github.action_path }}/scripts/checkChanges.ps1" | ConvertFrom-Json
+        echo "files_changed=$($result.files_changed)" >> "$env:GITHUB_OUTPUT"
+        echo "changed_files=$($result.changed_files)" >> "$env:GITHUB_OUTPUT"
+        Write-Host "info: $( $result | Out-String)"
       shell: pwsh
 
     - name: Try to build lean if something was updated
