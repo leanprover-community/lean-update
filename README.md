@@ -1,6 +1,6 @@
 # Lean Update
 
-A GitHub Action that attempts to update Lean and dependencies of a Lean project.
+A GitHub Action that attempts to update Lean and dependencies of a Lean project. This is basically a fork of [oliver-butterley/lean-update](https://github.com/oliver-butterley/lean-update) but more feature-rich.
 
 ## Usage
 
