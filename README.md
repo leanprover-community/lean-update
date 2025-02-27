@@ -8,7 +8,7 @@ A GitHub Action that attempts to update Lean and dependencies of a Lean project.
 
 1. If `lake update` determines that all dependencies are already up to date, this Action does nothing further.
 
-1. Subsequently, this GitHub Action calls another GitHub Action called [lean-action](https://github.com/leanprover/lean-action) to check if the updated code works correctly. This performs the build process, runs tests if a test driver is configured, and executes lint checks if a lint driver is set up. Whether to perform tests or lint checks is automatically determined by lean-action.
+1. Subsequently, this GitHub Action calls another GitHub Action called [lean-action](https://github.com/leanprover/lean-action) to check if the updated code works correctly. This performs the build process, runs tests if a test driver is configured, and executes lint checks if a lint driver is set up. Whether to perform tests or lint checks is automatically determined by lean-action. However, you can configure what build arguments are passed to lean-action using the `build_args` option.
 
 1. This Action classifies the results of lean-action into two categories: success or failure.
     1. If successful, it behaves according to the setting specified in the `on_update_succeeds` option. By default, this is set to `pr`, which submits the updated code as a pull request. However, if the `what_to_update` option is set to `lean-toolchain`, the Action does nothing unless the Lean version has been updated.
