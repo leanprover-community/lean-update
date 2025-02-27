@@ -18,8 +18,11 @@ inputs:
     default: "issue"
   what_to_update:
     description: |
-      Specifies which files should be considered when creating a PR or issue if the update is successful.
-      When the update fails, this option is ignored.
+      Specifies which files, when updated during `lake update`, will cause the action to skip updates.
+      For example, if "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated.
+      Also, for example, if "lake-manifest.json" is specified, this GitHub Action will not skip updates as long as any dependent package is updated.
+      Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update".
+      Therefore, this option does not affect the behavior when the build/test/lint fail after lake update.
       Allowed values: "lean-toolchain" or "lake-manifest.json".
       Default: "lean-toolchain"
     required: false
