@@ -2,6 +2,79 @@
 
 A GitHub Action that attempts to update Lean and dependencies of a Lean project. This is basically a fork of [oliver-butterley/lean-update](https://github.com/oliver-butterley/lean-update) but more feature-rich.
 
+## Quick Setup
+
+Create a file named `update.yml` in the `.github/workflows` directory.
+
+### If you want to keep dependencies always up-to-date
+
+To keep dependencies always up-to-date, you might want to configure as follows:
+
+```yml
+name: Update Lean Project
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # every day
+  workflow_dispatch: # allows workflow to be triggered manually
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Lean project
+        id: update-lean-mathlib
+        uses: Seasawher/lean-update@main
+        with:
+          on_update_fails: issue
+          on_update_succeeds: pr
+          what_to_update: lake-manifest.json
+          build_args: "--log-level=warning"
+```
+
+### When you only want to update when there is a new Lean version
+
+If you want to skip updates unless there is a change to the `lean-toolchain` file, you might want to configure as follows:
+
+```yml
+name: Update Lean Project
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update_lean:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Update Lean project
+        uses: Seasawher/lean-update@main
+        with:
+          on_update_succeeds: pr
+          on_update_fails: issue
+          what_to_update: lean-toolchain
+          build_args: "--log-level=warning"
+```
+
 ## Description of Functionality
 
 1. This Action first installs [elan](https://github.com/leanprover/elan) and runs `lake update`. This fetches any new Lean prereleases or releases and updates all dependent packages to their latest versions.
