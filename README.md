@@ -82,6 +82,21 @@ jobs:
     1. If successful, it behaves according to the setting specified in the `on_update_succeeds` option. By default, this is set to `pr`, which submits the updated code as a pull request. However, if the `what_to_update` option is set to `lean-toolchain`, the Action does nothing unless the Lean version has been updated.
     1. If it fails, it behaves according to the setting specified in the `on_update_fails` option. By default, this is set to `issue`, which submits an issue indicating that the update failed.
 
+## Details of Option
+
+* `on_update_succeeds`: What to do when an update is available and the build is successful. 
+    * Allowed values: "silent", "commit", "issue" or "pr". 
+    * Default: "pr".
+* `on_update_fails`: What to do when an update is available but the build fails.
+    * Allowed values: "silent", "commit", "issue" or "pr".
+    * Default: "issue".
+* `what_to_update`: Specifies which files, when updated during `lake update`, will cause the action to skip updates. For example, if "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated. Also, for example, if "lake-manifest.json" is specified, this GitHub Action will not skip updates as long as any dependent package is updated. Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update". Therefore, this option does not affect the behavior when the build/test/lint fail after lake update.
+    * Allowed values: "lean-toolchain", "lake-manifest.json".
+    * Default: "lean-toolchain".
+* `build_args`: Arguments to pass to the lean-action build process.
+    * Example: "--log-level=warning --fail-level=warning"
+    * Default: "--log-level=warning".
+
 ## Usage Examples
 
 I am using this GitHub Action in the following repository. This might be helpful as a reference.
