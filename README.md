@@ -18,14 +18,9 @@ on:
     - cron: "0 0 * * *" # every day
   workflow_dispatch: # allows workflow to be triggered manually
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  update:
+  update_lean:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
       pull-requests: write
