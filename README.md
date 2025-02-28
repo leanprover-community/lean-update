@@ -30,7 +30,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update Lean project
-        id: update-lean-mathlib
         uses: Seasawher/lean-update@main
         with:
           on_update_fails: issue
@@ -84,8 +83,8 @@ jobs:
 
 ## Details of Option
 
-* `on_update_succeeds`: What to do when an update is available and the build is successful. 
-    * Allowed values: "silent", "commit", "issue" or "pr". 
+* `on_update_succeeds`: What to do when an update is available and the build is successful.
+    * Allowed values: "silent", "commit", "issue" or "pr".
     * Default: "pr".
 * `on_update_fails`: What to do when an update is available but the build fails.
     * Allowed values: "silent", "commit", "issue" or "pr".
