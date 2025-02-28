@@ -3,7 +3,7 @@ $changedFiles = @()
 $files_changed = $false
 
 # Check for changes in the specified file(s)
-$whatToUpdate = if ($env:WHAT_TO_UPDATE) { $env:WHAT_TO_UPDATE } else { "lean-toolchain" }
+$whatToUpdate = if ($env:UPDATE_IF_MODIFIED) { $env:UPDATE_IF_MODIFIED } else { "lean-toolchain" }
 $whatToUpdateDiff = git diff -w $whatToUpdate
 
 # If the specified file has changed, set files_changed to true

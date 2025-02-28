@@ -16,7 +16,7 @@ inputs:
       Default: "issue".
     required: true
     default: "issue"
-  what_to_update:
+  update_if_modified:
     description: |
       Specifies which files, when updated during `lake update`, will cause the action to skip updates.
       For example, if "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated.
@@ -63,7 +63,7 @@ runs:
         Add-Content -Path "$env:GITHUB_OUTPUT" -Value "changed_files=$($result.changed_files)"
         Add-Content -Path "$env:GITHUB_OUTPUT" -Value "file_to_update_changed=$($result.file_to_update_changed)"
       env:
-        WHAT_TO_UPDATE: ${{ inputs.what_to_update }}
+        UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
       shell: pwsh
 
     - name: Try to build lean if something was updated
