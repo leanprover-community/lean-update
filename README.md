@@ -31,11 +31,6 @@ jobs:
 
       - name: Update Lean project
         uses: Seasawher/lean-update@main
-        with:
-          on_update_fails: issue
-          on_update_succeeds: pr
-          update_if_modified: lake-manifest.json
-          build_args: "--log-level=warning"
 ```
 
 ### When you only want to update when there is a new Lean version
@@ -63,10 +58,7 @@ jobs:
       - name: Update Lean project
         uses: Seasawher/lean-update@main
         with:
-          on_update_succeeds: pr
-          on_update_fails: issue
           update_if_modified: lean-toolchain
-          build_args: "--log-level=warning"
 ```
 
 ## Description of Functionality
@@ -91,7 +83,7 @@ jobs:
     * Default: "issue".
 * `update_if_modified`: Specifies which files, when updated during `lake update`, will cause the action to skip updates. For example, if "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated. Also, for example, if "lake-manifest.json" is specified, this GitHub Action will not skip updates as long as any dependent package is updated. Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update". Therefore, this option does not affect the behavior when the build/test/lint fail after lake update.
     * Allowed values: "lean-toolchain", "lake-manifest.json".
-    * Default: "lean-toolchain".
+    * Default: "lake-manifest.json".
 * `build_args`: Arguments to pass to the lean-action build process.
     * Example: "--log-level=warning --fail-level=warning"
     * Default: "--log-level=warning".

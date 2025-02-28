@@ -24,9 +24,9 @@ inputs:
       Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update".
       Therefore, this option does not affect the behavior when the build/test/lint fail after lake update.
       Allowed values: "lean-toolchain" or "lake-manifest.json".
-      Default: "lean-toolchain"
+      Default: "lake-manifest.json"
     required: false
-    default: "lean-toolchain"
+    default: "lake-manifest.json"
   build_args:
     description: |
       This GitHub Action uses leanprover/lean-action to build and test the repository.
