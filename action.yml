@@ -134,9 +134,12 @@ runs:
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST- $file\n"
+          BULLET_LIST="$BULLET_LIST
+        - $file"
         done
-        BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.\nFiles changed in update:\n$BULLET_LIST"
+        BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.
+
+        Files changed in update:$BULLET_LIST"
         gh issue create --title "$TITLE" --body "$BODY"
       env:
         GH_TOKEN: ${{ inputs.token }}
