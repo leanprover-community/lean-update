@@ -112,13 +112,12 @@ runs:
           $bullet_list += "- $file`n"
         }
         $body = "Files changed in update:`n$bullet_list"
-        gh issue create --title "$env:TITLE" --label "$env:LABELS" --body $body
+        gh issue create --title "$env:TITLE" --body $body
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
-        LABELS: "auto-update-lean"
       shell: pwsh
 
     - name: Commit update if the updated lean build was successful
@@ -128,8 +127,8 @@ runs:
         default_author: github_actions
       env:
         ON_UPDATE_SUCCEEDS: ${{ inputs.on_update_succeeds }}
-        FILE_TO_UPDATE_CHANGED: ${{ steps.check-update.outputs.file_to_update_changed }}     
-  
+        FILE_TO_UPDATE_CHANGED: ${{ steps.check-update.outputs.file_to_update_changed }}
+
     # ----------------- #
     # when update fails #
     # ----------------- #
@@ -142,12 +141,11 @@ runs:
           $bullet_list += "- $file`n"
         }
         $body = "Try `lake update` and then investigate why this update causes the lean build to fail.`nFiles changed in update:`n$bullet_list"
-        gh issue create --title "$env:TITLE" --label "$env:LABELS" --body $body
+        gh issue create --title "$env:TITLE" --body $body
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: "Updates available but manual intervention required"
-        LABELS: "bug"
       shell: pwsh
 
     - name: Action fails if the updated lean build fails
