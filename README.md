@@ -47,8 +47,8 @@ name: Update Lean Project
 
 on:
   schedule:
-    - cron: "0 0 * * *"
-  workflow_dispatch:
+    - cron: "0 0 * * *" # every day
+  workflow_dispatch: # allows workflow to be triggered manually
 
 jobs:
   update_lean:
