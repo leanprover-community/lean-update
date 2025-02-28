@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Initialize variables to track all changed files
 const changedFiles = [];
-let fileToUpdateChanged = false;
+let doUpdate = false;
 
 // Define all candidate files we should check
 const allCandidates = ["lean-toolchain", "lake-manifest.json"];
@@ -20,10 +20,10 @@ if (!allCandidates.includes(updateIfModified)) {
 
 try {
   const updateIfModifiedDiff = execSync(`git diff -w ${updateIfModified}`, { encoding: 'utf8' });
-  fileToUpdateChanged = updateIfModifiedDiff.length > 0;
+  doUpdate = updateIfModifiedDiff.length > 0;
 } catch (error) {
   console.error(`Error checking diff for ${updateIfModified}:`, error);
-  fileToUpdateChanged = false;
+  doUpdate = false;
 }
 
 // Check all candidate files for changes
@@ -41,7 +41,7 @@ allCandidates.forEach(candidate => {
 // Create result object
 const result = {
   files_changed: changedFiles.length > 0,
-  file_to_update_changed: fileToUpdateChanged,
+  do_update: doUpdate,
   changed_files: changedFiles.join(' ')
 };
 
@@ -52,5 +52,5 @@ const githubOutput = process.env.GITHUB_OUTPUT;
 if (githubOutput) {
   fs.appendFileSync(githubOutput, `files_changed=${result.files_changed}\n`);
   fs.appendFileSync(githubOutput, `changed_files=${result.changed_files}\n`);
-  fs.appendFileSync(githubOutput, `file_to_update_changed=${result.file_to_update_changed}\n`);
+  fs.appendFileSync(githubOutput, `do_update=${result.do_update}\n`);
 }
