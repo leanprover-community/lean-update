@@ -57,14 +57,10 @@ runs:
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
-      run: |
-        $result = & "${{ github.action_path }}/scripts/checkChanges.ps1" | ConvertFrom-Json
-        Add-Content -Path "$env:GITHUB_OUTPUT" -Value "files_changed=$($result.files_changed)"
-        Add-Content -Path "$env:GITHUB_OUTPUT" -Value "changed_files=$($result.changed_files)"
-        Add-Content -Path "$env:GITHUB_OUTPUT" -Value "file_to_update_changed=$($result.file_to_update_changed)"
+      run: node ${{ github.action_path }}/scripts/checkChanges.js
       env:
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
-      shell: pwsh
+      shell: bash
 
     - name: Try to build lean if something was updated
       if: steps.check-update.outputs.files_changed == 'true'
@@ -77,17 +73,17 @@ runs:
     - name: Record outcome
       id: record-outcome
       run: |
-        if ("${{steps.check-update.outputs.files_changed}}" -eq "false") {
-          Write-Host "No update available"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=no-update"
-        } elseif ("${{steps.build-lean.outcome}}" -eq "success") {
-          Write-Host "Update available and build successful"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-success"
-        } elseif ("${{steps.build-lean.outcome}}" -eq "failure") {
-          Write-Host "Update available but build fails"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "outcome=update-fail"
-        }
-      shell: pwsh
+        if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
+          echo "No update available"
+          echo "outcome=no-update" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.build-lean.outcome }}" == "success" ]; then
+          echo "Update available and build successful"
+          echo "outcome=update-success" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.build-lean.outcome }}" == "failure" ]; then
+          echo "Update available but build fails"
+          echo "outcome=update-fail" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
 
     # ------------------------- #
     # when update is successful #
@@ -106,19 +102,19 @@ runs:
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.file_to_update_changed == 'true'
       run: |
-        $files = "${{ steps.check-update.outputs.changed_files }}"
-        $bullet_list = ""
-        foreach ($file in $files -split ' ') {
-          $bullet_list += "- $file`n"
-        }
-        $body = "Files changed in update:`n$bullet_list"
-        gh issue create --title "$env:TITLE" --body $body
+        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
+        BULLET_LIST=""
+        for file in $CHANGED_FILES; do
+          BULLET_LIST="$BULLET_LIST- $file\n"
+        done
+        BODY="Files changed in update:\n$BULLET_LIST"
+        gh issue create --title "$TITLE" --body "$BODY"
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: Updates available and have been tested to build correctly
-      shell: pwsh
+      shell: bash
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.file_to_update_changed == 'true'
@@ -135,18 +131,18 @@ runs:
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: |
-        $files = "${{ steps.check-update.outputs.changed_files }}"
-        $bullet_list = ""
-        foreach ($file in $files -split ' ') {
-          $bullet_list += "- $file`n"
-        }
-        $body = "Try `lake update` and then investigate why this update causes the lean build to fail.`nFiles changed in update:`n$bullet_list"
-        gh issue create --title "$env:TITLE" --body $body
+        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
+        BULLET_LIST=""
+        for file in $CHANGED_FILES; do
+          BULLET_LIST="$BULLET_LIST- $file\n"
+        done
+        BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.\nFiles changed in update:\n$BULLET_LIST"
+        gh issue create --title "$TITLE" --body "$BODY"
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
         TITLE: "Updates available but manual intervention required"
-      shell: pwsh
+      shell: bash
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
