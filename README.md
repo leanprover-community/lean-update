@@ -21,10 +21,6 @@ on:
 jobs:
   update_lean:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,10 +44,6 @@ on:
 jobs:
   update_lean:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
-      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
