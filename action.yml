@@ -40,7 +40,7 @@ inputs:
     default: ${{ github.token }}
 outputs:
   result:
-    description: "The action outputs `up-to-date`, `update-succeeds` or `update-fails` depending on the three possible scenarios."
+    description: "The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios."
     value: ${{ steps.record-outcome.outputs.outcome }}
 runs:
   using: "composite"
