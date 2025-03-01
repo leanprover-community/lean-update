@@ -65,6 +65,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Update lean-toolchain
+      run: |
+        cd ${{ inputs.lake-package-directory }}
+        ${{ github.action_path }}/scripts/getLatest.ps1
+      env:
+        GH_TOKEN: ${{ github.token }}
+      shell: pwsh
+
     - name: Install elan
       run: |
         curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
@@ -79,7 +87,9 @@ runs:
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
-      run: node ${{ github.action_path }}/scripts/checkChanges.js
+      run: |
+        cd ${{ inputs.lake-package-directory }}
+        node ${{ github.action_path }}/scripts/checkChanges.js
       env:
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
       shell: bash
