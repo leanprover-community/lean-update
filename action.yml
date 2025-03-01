@@ -72,7 +72,9 @@ runs:
       shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
-      run: lake update
+      run: |
+        cd ${{ inputs.lake-package-directory }}
+        lake update
       shell: bash
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
