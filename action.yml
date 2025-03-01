@@ -41,6 +41,12 @@ inputs:
       This parameter determines what to pass to the build-args argument of leanprover/lean-action.
     required: false
     default: "--log-level=warning"
+  lake-package-directory:
+    description: |
+      The directory containing the Lake package to build.
+      This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
+    required: false
+    default: "."
   token:
     description: |
       A Github token to be used for committing
@@ -83,6 +89,7 @@ runs:
       uses: leanprover/lean-action@v1
       with:
         build-args: ${{ inputs.build_args }}
+        lake-package-directory: ${{ inputs.lake-package-directory }}
 
     - name: Record outcome
       id: record-outcome

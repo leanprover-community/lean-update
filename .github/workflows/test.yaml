@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build
-        uses: leanprover/lean-action@v1
+
+      - name: Update Lean package
+        uses: Seasawher/lean-update@develop
         with:
+          on_update_succeeds: "silent" # this step should succeed
           lake-package-directory: "./test/Foo"
-      # - name: Update Lean project
-      #   uses: Seasawher/lean-update@develop
