@@ -72,7 +72,7 @@ runs:
 
     - name: Record outcome
       id: record-outcome
-      run: |
+      run: | # bat
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No update available"
           echo "outcome=no-update" >> $GITHUB_OUTPUT
@@ -101,7 +101,7 @@ runs:
 
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
-      run: |
+      run: | # bat
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
@@ -130,7 +130,7 @@ runs:
     # ----------------- #
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
-      run: |
+      run: | # bat
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
