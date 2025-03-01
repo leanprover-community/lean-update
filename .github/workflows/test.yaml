@@ -40,3 +40,20 @@ jobs:
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'
         run: exit 1
+
+  output_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Lean package
+        id: update
+        uses: Seasawher/lean-update@develop
+        with:
+          on_update_succeeds: "silent"
+          lake_package_directory: "./test/Foo"
+
+      - name: output assertion of latest_lean
+        if: steps.update.outputs.latest_lean != 'v4.16.0'
+        run: exit 1

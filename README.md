@@ -161,6 +161,21 @@ A Github token to be used for committing and creating issues/PRs.
 
 Default: `${{ github.token }}`
 
+## Outputs
+
+### `result`
+
+The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios.
+
+Description of each value:
+* `no-update`: No update was available.
+* `update-success`: An update was available and lean-action step was successful.
+* `update-fail`: An update was available but the lean-action step failed.
+
+### `latest_lean`
+
+The latest Lean release version, including both stable and pre-release versions.
+
 ## Usage Examples
 
 I am using this GitHub Action in the following repository. This might be helpful as a reference.

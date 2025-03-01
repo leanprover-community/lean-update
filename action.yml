@@ -61,7 +61,11 @@ outputs:
         * `no-update`: No update was available.
         * `update-success`: An update was available and lean-action step was successful.
         * `update-fail`: An update was available but the lean-action step failed.
-    value: ${{ steps.record-outcome.outputs.outcome }}
+    value: ${{ steps.record-result.outputs.outcome }}
+  latest_lean:
+    description: | # markdown
+      The latest Lean release version, including both stable and pre-release versions.
+    value: ${{ steps.record-latest-lean.outputs.latest_lean }}
 runs:
   using: "composite"
   steps:
@@ -103,8 +107,11 @@ runs:
         build-args: ${{ inputs.build_args }}
         lake-package-directory: ${{ inputs.lake_package_directory }}
 
+    # -------------------------------- #
+    # record the output of this action #
+    # -------------------------------- #
     - name: Record outcome
-      id: record-outcome
+      id: record-result
       run: | # bat
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No update available"
@@ -116,6 +123,14 @@ runs:
           echo "Update available but build fails"
           echo "outcome=update-fail" >> $GITHUB_OUTPUT
         fi
+      shell: bash
+
+    - name: Record latest Lean version
+      id: record-latest-lean
+      run: |
+        cd ${{ inputs.lake_package_directory }}
+        LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
+        echo "latest_lean=$LEAN_VERSION" >> $GITHUB_OUTPUT
       shell: bash
 
     # ------------------------- #
