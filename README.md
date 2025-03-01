@@ -74,6 +74,8 @@ jobs:
       - name: Update Lean project
         id: lean-update
         uses: Seasawher/lean-update@main
+        with:
+          on_update_fails: "silent"
 
       - name: Zulip Notifycation
         if: steps.lean-update.outputs.result == 'update-fail'
