@@ -55,10 +55,20 @@ jobs:
           lake_package_directory: "./test/Foo"
 
       - name: output assertion of latest_lean
-        run: |
+        run: | # bat
           echo "Latest Lean version: ${{ steps.update.outputs.latest_lean }}"
           if [[ ! "${{ steps.update.outputs.latest_lean }}" =~ ^v ]]; then
             echo "Error: The latest_lean output should start with 'v'"
             exit 1
           fi
           echo "latest_lean output test passed"
+
+      - name: output assertion of notify
+        run: | # bat
+          echo "Notify status: ${{ steps.update.outputs.notify }}"
+          if [[ "${{ steps.update.outputs.notify }}" != "true" ]]; then
+            echo "Error: The notify output should be 'true' for this test case"
+            echo "This test should have updates available with a successful build"
+            exit 1
+          fi
+          echo "notify output test passed"

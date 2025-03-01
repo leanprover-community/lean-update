@@ -66,6 +66,14 @@ outputs:
     description: | # markdown
       The latest Lean release version, including both stable and pre-release versions.
     value: ${{ steps.record-latest-lean.outputs.latest_lean }}
+  notify:
+    description: | # markdown
+      Indicates whether there is an event worth notifying the user about.
+      Returns `true` in the following cases:
+        * When updates are available and the build succeeds. However, if `update_if_modified` is set to `lean-toolchain`, this is only true when the Lean version has been updated.
+        * When updates are available and the build fails.
+      Returns `false` in all other cases.
+    value: ${{ steps.record-notify.outputs.notify }}
 runs:
   using: "composite"
   steps:
@@ -139,6 +147,25 @@ runs:
         echo "latest_lean=$LEAN_VERSION" >> $GITHUB_OUTPUT
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
+
+    - name: Record the notify status
+      id: record-notify
+      run: |
+        : Record the notify status
+        if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
+          echo "No updates available, no need to notify"
+          echo "notify=false" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.build-lean.outcome }}" == "success" ] && [ "${{ steps.check-update.outputs.do_update }}" == "true" ]; then
+          echo "Updates available and build successful - should notify"
+          echo "notify=true" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.build-lean.outcome }}" == "failure" ]; then
+          echo "Updates available but build failed - should notify"
+          echo "notify=true" >> $GITHUB_OUTPUT
+        else
+          echo "No need to notify in this case"
+          echo "notify=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
 
     # ------------------------- #
     # when update is successful #
