@@ -148,7 +148,7 @@ This parameter determines what to pass to the build-args argument of leanprover/
 
 Default: `--log-level=warning`
 
-### `lake-package-directory`
+### `lake_package_directory`
 
 The directory containing the Lake package to build.
 This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
