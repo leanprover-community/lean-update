@@ -15,6 +15,6 @@ jobs:
       - name: Build
         uses: leanprover/lean-action@v1
         with:
-          lake-package-directory: "/test/Foo"
+          lake-package-directory: "./test/Foo"
       # - name: Update Lean project
       #   uses: Seasawher/lean-update@develop
