@@ -18,25 +18,29 @@ if (!allCandidates.includes(updateIfModified)) {
   process.exit(1);
 }
 
-try {
-  const updateIfModifiedDiff = execSync(`git diff -w ${updateIfModified}`, { encoding: 'utf8' });
-  doUpdate = updateIfModifiedDiff.length > 0;
-} catch (error) {
-  console.error(`Error checking diff for ${updateIfModified}:`, error);
-  doUpdate = false;
-}
-
 // Check all candidate files for changes
+const fileChanges = {};
 allCandidates.forEach(candidate => {
   try {
     const diff = execSync(`git diff -w ${candidate}`, { encoding: 'utf8' });
+    fileChanges[candidate] = diff.length > 0;
     if (diff.length > 0) {
       changedFiles.push(candidate);
     }
   } catch (error) {
     console.error(`Error checking diff for ${candidate}:`, error);
+    fileChanges[candidate] = false;
   }
 });
+
+// Determine if updates should proceed based on the specified update_if_modified value
+if (updateIfModified === 'lean-toolchain') {
+  // If update_if_modified is lean-toolchain, only proceed if lean-toolchain has changed
+  doUpdate = fileChanges['lean-toolchain'];
+} else if (updateIfModified === 'lake-manifest.json') {
+  // If update_if_modified is lake-manifest.json, proceed if any file has changed
+  doUpdate = changedFiles.length > 0;
+}
 
 // Create result object
 const result = {
