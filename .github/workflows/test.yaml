@@ -18,3 +18,15 @@ jobs:
         with:
           on_update_succeeds: "silent" # this step should succeed
           lake-package-directory: "./test/Foo"
+
+  fail_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Lean package
+        uses: Seasawher/lean-update@develop
+        with:
+          on_update_fails: "silent" # this step should fail
+          lake-package-directory: "./test/Fail"
