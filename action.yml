@@ -82,6 +82,7 @@ runs:
       run: node ${{ github.action_path }}/scripts/checkChanges.js
       env:
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake-package-directory }}
       shell: bash
 
     - name: Try to build lean if something was updated
