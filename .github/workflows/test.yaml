@@ -14,10 +14,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update Lean package
+        id: update
         uses: Seasawher/lean-update@develop
         with:
-          on_update_succeeds: "silent" # this step should succeed
+          on_update_succeeds: "silent"
           lake-package-directory: "./test/Foo"
+
+      - name: This update should succeed
+        if: steps.update.outputs.result != 'update-success'
+        run: exit 1
 
   fail_test:
     runs-on: ubuntu-latest
@@ -26,7 +31,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update Lean package
+        id: update
         uses: Seasawher/lean-update@develop
         with:
-          on_update_fails: "silent" # this step should fail
+          on_update_fails: "silent"
           lake-package-directory: "./test/Fail"
+
+      - name: This update should fail
+        if: steps.update.outputs.result != 'update-fail'
+        run: exit 1
