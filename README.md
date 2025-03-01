@@ -176,3 +176,10 @@ Description of each value:
 
 The latest Lean release version, including both stable and pre-release versions.
 
+### `notify`
+
+Indicates whether there is an event worth notifying the user about.
+Returns `true` in the following cases:
+* When updates are available and the build succeeds. However, if `update_if_modified` is set to `lean-toolchain`, this is only true when the Lean version has been updated.
+* When updates are available and the build fails.
+Returns `false` in all other cases.
