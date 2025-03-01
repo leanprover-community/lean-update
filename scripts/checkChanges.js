@@ -1,42 +1,56 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
-// Get environment variables
-const updateIfModified = process.env.UPDATE_IF_MODIFIED || "lake-manifest.json";
-const packageDirectory = process.env.LAKE_PACKAGE_DIRECTORY || ".";
-
-// Define all candidate files we should check, but with the package directory prefix
-const allCandidates = ["lean-toolchain", "lake-manifest.json"].map(file =>
-  path.join(packageDirectory, file).replace(/\\/g, '/') // Ensure forward slashes for Git
-);
-
-// Filter candidates based on what we're actually monitoring
-const candidates = updateIfModified === "lean-toolchain"
-  ? [allCandidates[0]]
-  : allCandidates;
-
-// Get the changed files
+// Initialize variables to track all changed files
 const changedFiles = [];
-for (const file of candidates) {
+let doUpdate = false;
+
+// Define all candidate files we should check
+const allCandidates = ["lean-toolchain", "lake-manifest.json"];
+
+// Check for changes in the specified file(s)
+const updateIfModified = process.env.UPDATE_IF_MODIFIED;
+
+// Validate that updateIfModified is in allCandidates
+if (!allCandidates.includes(updateIfModified)) {
+  console.error(`Error: ${updateIfModified} is not a valid option for UPDATE_IF_MODIFIED`);
+  console.error(`Valid options are: ${allCandidates.join(', ')}`);
+  process.exit(1);
+}
+
+try {
+  const updateIfModifiedDiff = execSync(`git diff -w ${updateIfModified}`, { encoding: 'utf8' });
+  doUpdate = updateIfModifiedDiff.length > 0;
+} catch (error) {
+  console.error(`Error checking diff for ${updateIfModified}:`, error);
+  doUpdate = false;
+}
+
+// Check all candidate files for changes
+allCandidates.forEach(candidate => {
   try {
-    const status = execSync(`git status --porcelain ${file}`).toString().trim();
-    if (status && status.startsWith(" M")) {
-      changedFiles.push(file);
+    const diff = execSync(`git diff -w ${candidate}`, { encoding: 'utf8' });
+    if (diff.length > 0) {
+      changedFiles.push(candidate);
     }
   } catch (error) {
-    console.error(`Error checking status for ${file}:`, error.message);
+    console.error(`Error checking diff for ${candidate}:`, error);
   }
-}
+});
 
-// Output the results using the recommended GITHUB_OUTPUT environment variable
+// Create result object
+const result = {
+  files_changed: changedFiles.length > 0,
+  do_update: doUpdate,
+  changed_files: changedFiles.join(' ')
+};
+
+console.log('info:', JSON.stringify(result, null, 2));
+
+// Use the recommended GITHUB_OUTPUT approach
 const githubOutput = process.env.GITHUB_OUTPUT;
 if (githubOutput) {
-  fs.appendFileSync(githubOutput, `files_changed=${changedFiles.length > 0}\n`);
-  fs.appendFileSync(githubOutput, `do_update=${changedFiles.length > 0}\n`);
-  fs.appendFileSync(githubOutput, `changed_files=${changedFiles.join(' ')}\n`);
+  fs.appendFileSync(githubOutput, `files_changed=${result.files_changed}\n`);
+  fs.appendFileSync(githubOutput, `changed_files=${result.changed_files}\n`);
+  fs.appendFileSync(githubOutput, `do_update=${result.do_update}\n`);
 }
-
-// Debug information
-console.log(`Monitoring files: ${candidates.join(', ')}`);
-console.log(`Changed files: ${changedFiles.join(', ')}`);
