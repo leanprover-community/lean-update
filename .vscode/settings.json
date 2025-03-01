@@ -4,4 +4,7 @@
   "files.associations": {
     "action.yml": "github-actions-workflow"
   },
+  "files.exclude": {
+    "**/.git": false,
+  }
 }

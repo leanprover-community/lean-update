@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  plain_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: "/test/Foo"
+      # - name: Update Lean project
+      #   uses: Seasawher/lean-update@develop
