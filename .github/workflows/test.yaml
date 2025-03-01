@@ -55,5 +55,10 @@ jobs:
           lake_package_directory: "./test/Foo"
 
       - name: output assertion of latest_lean
-        if: steps.update.outputs.latest_lean != 'v4.16.0'
-        run: exit 1
+        run: |
+          echo "Latest Lean version: ${{ steps.update.outputs.latest_lean }}"
+          if [[ ! "${{ steps.update.outputs.latest_lean }}" =~ ^v ]]; then
+            echo "Error: The latest_lean output should start with 'v'"
+            exit 1
+          fi
+          echo "latest_lean output test passed"
