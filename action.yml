@@ -71,32 +71,36 @@ runs:
   steps:
     - name: Update lean-toolchain
       run: |
-        cd ${{ inputs.lake_package_directory }}
+        : Update lean-toolchain
         node ${{ github.action_path }}/scripts/getLatest.js
       env:
         GH_TOKEN: ${{ github.token }}
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Install elan
       run: |
+        : Install elan
         curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
         echo "$HOME/.elan/bin" >> $GITHUB_PATH
       shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
       run: |
-        cd ${{ inputs.lake_package_directory }}
+        : Update dependencies
         lake update
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
-        cd ${{ inputs.lake_package_directory }}
+        : Check if lean-toolchain or lake-manifest.json were updated
         node ${{ github.action_path }}/scripts/checkChanges.js
       env:
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Try to build lean if something was updated
       if: steps.check-update.outputs.files_changed == 'true'
@@ -110,9 +114,10 @@ runs:
     # -------------------------------- #
     # record the output of this action #
     # -------------------------------- #
-    - name: Record outcome
+    - name: Record the outcome
       id: record-result
       run: | # bat
+        : Record the outcome
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No update available"
           echo "outcome=no-update" >> $GITHUB_OUTPUT
@@ -125,13 +130,15 @@ runs:
         fi
       shell: bash
 
-    - name: Record latest Lean version
+    - name: Record the latest Lean version
       id: record-latest-lean
       run: |
-        cd ${{ inputs.lake_package_directory }}
+        : Record the latest Lean version
         LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
+        echo "Latest Lean release is: $LEAN_VERSION"
         echo "latest_lean=$LEAN_VERSION" >> $GITHUB_OUTPUT
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     # ------------------------- #
     # when update is successful #
@@ -150,6 +157,7 @@ runs:
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
       run: | # bat
+        : Open issue if the updated lean build was successful
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
@@ -179,6 +187,7 @@ runs:
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: | # bat
+        : Open issue if the updated lean build fails
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
@@ -197,7 +206,9 @@ runs:
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
-      run: exit 1
+      run: |
+        : Action fails if the updated lean build fails
+        exit 1
       shell: bash
 
 branding:
