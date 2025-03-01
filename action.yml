@@ -41,7 +41,7 @@ inputs:
       This parameter determines what to pass to the build-args argument of leanprover/lean-action.
     required: false
     default: "--log-level=warning"
-  lake-package-directory:
+  lake_package_directory:
     description: |
       The directory containing the Lake package to build.
       This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
@@ -67,7 +67,7 @@ runs:
   steps:
     - name: Update lean-toolchain
       run: |
-        cd ${{ inputs.lake-package-directory }}
+        cd ${{ inputs.lake_package_directory }}
         node ${{ github.action_path }}/scripts/getLatest.js
       env:
         GH_TOKEN: ${{ github.token }}
@@ -81,14 +81,14 @@ runs:
 
     - name: Update dependencies of ${{ github.repository }}
       run: |
-        cd ${{ inputs.lake-package-directory }}
+        cd ${{ inputs.lake_package_directory }}
         lake update
       shell: bash
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
-        cd ${{ inputs.lake-package-directory }}
+        cd ${{ inputs.lake_package_directory }}
         node ${{ github.action_path }}/scripts/checkChanges.js
       env:
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
@@ -101,7 +101,7 @@ runs:
       uses: leanprover/lean-action@v1
       with:
         build-args: ${{ inputs.build_args }}
-        lake-package-directory: ${{ inputs.lake-package-directory }}
+        lake-package-directory: ${{ inputs.lake_package_directory }}
 
     - name: Record outcome
       id: record-outcome

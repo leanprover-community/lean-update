@@ -18,7 +18,7 @@ jobs:
         uses: Seasawher/lean-update@develop
         with:
           on_update_succeeds: "silent"
-          lake-package-directory: "./test/Foo"
+          lake_package_directory: "./test/Foo"
 
       - name: This update should succeed
         if: steps.update.outputs.result != 'update-success'
@@ -35,7 +35,7 @@ jobs:
         uses: Seasawher/lean-update@develop
         with:
           on_update_fails: "silent"
-          lake-package-directory: "./test/Fail"
+          lake_package_directory: "./test/Fail"
 
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'
