@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  plain_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Lean package
+        uses: Seasawher/lean-update@develop
+        with:
+          on_update_succeeds: "silent" # this step should succeed
+          lake-package-directory: "./test/Foo"
