@@ -53,6 +53,42 @@ jobs:
           update_if_modified: lean-toolchain
 ```
 
+### If you want to receive notifications on Zulip when the update fails
+
+After registering your Zulip API Key in your repository SECRETS, configure as follows:
+
+```yml
+name: Update Lean Project
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # every day
+  workflow_dispatch: # allows workflow to be triggered manually
+
+jobs:
+  update_lean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Update Lean project
+        id: lean-update
+        uses: Seasawher/lean-update@main
+
+      - name: Zulip Notifycation
+        if: steps.lean-update.outputs.result == 'update-fail'
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_API_KEY }}
+          email: <YOUR Zulip BOT's EMAIL>
+          organization-url: 'https://leanprover.zulipchat.com'
+          to: <YOUR Zulip STREAM NAME>
+          type: "stream"
+          topic: <YOUR TOPIC NAME>
+          content: |
+             ❌ The latest CI for ${{ github.repository }} has [failed](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
+```
+
 ## Description of Functionality
 
 1. This Action first installs [elan](https://github.com/leanprover/elan) and runs `lake update`. This fetches any new Lean prereleases or releases and updates all dependent packages to their latest versions.
