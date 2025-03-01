@@ -68,10 +68,10 @@ runs:
     - name: Update lean-toolchain
       run: |
         cd ${{ inputs.lake-package-directory }}
-        ${{ github.action_path }}/scripts/getLatest.ps1
+        node ${{ github.action_path }}/scripts/getLatest.js
       env:
         GH_TOKEN: ${{ github.token }}
-      shell: pwsh
+      shell: bash
 
     - name: Install elan
       run: |
