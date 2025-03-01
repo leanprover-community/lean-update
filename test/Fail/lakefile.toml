@@ -1,0 +1,10 @@
+name = "Fail"
+version = "0.1.0"
+defaultTargets = ["fail"]
+
+[[lean_lib]]
+name = "Fail"
+
+[[lean_exe]]
+name = "fail"
+root = "Main"
