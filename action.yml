@@ -52,7 +52,7 @@ runs:
       shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
-      run: lake -R -Kenv=dev update
+      run: lake update
       shell: bash
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
