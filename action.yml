@@ -5,42 +5,56 @@ inputs:
   on_update_succeeds:
     description: |
       What to do when an update is available and the build is successful.
-      Allowed values: "silent", "commit", "issue" or "pr".
+      Allowed values:
+        * "silent": Do nothing
+        * "commit": silently commit the updated files
+        * "issue": notify the user by creating an issue
+        * "pr": notify the user by creating a pull request
       Default: "pr".
-    required: true
+    required: false
     default: "pr"
   on_update_fails:
     description: |
       What to do when an update is available and the build fails.
-      Allowed values: "silent", "issue" or "pr".
+      Allowed values:
+        * "silent": Do nothing
+        * "issue": notify the user by creating an issue
+        * "pr": notify the user by creating a pull request
       Default: "issue".
-    required: true
+    required: false
     default: "issue"
   update_if_modified:
-    description: |
-      Specifies which files, when updated during `lake update`, will cause the action to skip updates.
-      For example, if "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated.
-      Also, for example, if "lake-manifest.json" is specified, this GitHub Action will not skip updates as long as any dependent package is updated.
-      Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update".
-      Therefore, this option does not affect the behavior when the build/test/lint fail after lake update.
-      Allowed values: "lean-toolchain" or "lake-manifest.json".
+    description: | # markdown
+      Specifies which files, when updated during `lake update`, will cause the action to update code or notify the user.
+      Therefore, this option does not affect the behavior when the build/test/lint fail after `lake update`.
+      Allowed values:
+        * "lean-toolchain":
+          If "lean-toolchain" is specified, this GitHub Action will skip updates unless the Lean version is updated.
+          Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update".
+        * "lake-manifest.json": if "lake-manifest.json" is specified, this GitHub Action will not skip updates as long as any dependent package is updated.
       Default: "lake-manifest.json"
     required: false
     default: "lake-manifest.json"
   build_args:
     description: |
       This GitHub Action uses leanprover/lean-action to build and test the repository.
-      This parameter determines what to pass to the build-args argument of lean-action.
+      This parameter determines what to pass to the build-args argument of leanprover/lean-action.
     required: false
     default: "--log-level=warning"
   token:
     description: |
       A Github token to be used for committing
-    required: true
+    required: false
     default: ${{ github.token }}
 outputs:
   result:
-    description: "The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios."
+    description: | # markdown
+      The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios.
+
+      Description of each value:
+        * `no-update`: No update was available.
+        * `update-success`: An update was available and lean-action step was successful.
+        * `update-fail`: An update was available but the lean-action step failed.
     value: ${{ steps.record-outcome.outputs.outcome }}
 runs:
   using: "composite"
