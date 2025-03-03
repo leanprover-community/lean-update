@@ -131,7 +131,7 @@ Default: `issue`.
 ### `update_if_modified`
 
 Specifies which files, when updated during `lake update`, will cause the action to update code or notify the user.
-Therefore, this option does not affect the behavior when the build/test/lint fail after `lake update`.
+This option does not affect the behavior when the build/test/lint fail after `lake update`.
 
 Allowed values:
 * `lean-toolchain`:
