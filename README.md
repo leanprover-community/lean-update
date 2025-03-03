@@ -111,7 +111,7 @@ What to do when an update is available and the build is successful.
 
 Allowed values:
 * `silent`: Do nothing
-* `commit`: silently commit the updated files
+* `commit`: directly commit the updated files
 * `issue`: notify the user by creating an issue
 * `pr`: notify the user by creating a pull request
 
