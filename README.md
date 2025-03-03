@@ -77,7 +77,7 @@ jobs:
         with:
           on_update_fails: "silent"
 
-      - name: Zulip Notifycation
+      - name: Notifycation
         if: steps.lean-update.outputs.result == 'update-fail'
         uses: zulip/github-actions-zulip/send-message@v1
         with:
