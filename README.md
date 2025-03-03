@@ -88,7 +88,7 @@ jobs:
           type: "stream"
           topic: <YOUR TOPIC NAME>
           content: |
-             ❌ The latest CI for ${{ github.repository }} has [failed](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
+             ❌ The update of ${{ github.repository }} has [failed](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
 ```
 
 ## Description of Functionality
