@@ -137,7 +137,7 @@ Allowed values:
 * `lean-toolchain`:
   If `lean-toolchain` is specified, this GitHub Action will skip updates unless the Lean version is updated.
   Here, "skipping updates" means "not attempting to update code or send notifications when the build/test/lint succeed after lake update".
-* `lake-manifest.json`: if `lake-manifest.json` is specified, this GitHub Action will not skip updates as long as any dependent package is updated.
+* `lake-manifest.json`: if `lake-manifest.json` is specified, this GitHub Action will perform an update if any dependent package is updated.
 
 Default: `lake-manifest.json`
 
