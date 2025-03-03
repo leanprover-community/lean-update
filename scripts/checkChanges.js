@@ -13,7 +13,7 @@ const updateIfModified = process.env.UPDATE_IF_MODIFIED;
 
 // Validate that updateIfModified is in allCandidates
 if (!allCandidates.includes(updateIfModified)) {
-  console.error(`Error: ${updateIfModified} is not a valid option for UPDATE_IF_MODIFIED`);
+  console.error(`Error: ${updateIfModified} is not a valid option for update_if_modified`);
   console.error(`Valid options are: ${allCandidates.join(', ')}`);
   process.exit(1);
 }
