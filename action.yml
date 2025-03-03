@@ -100,7 +100,7 @@ runs:
       if : ${{ inputs.lean_version != 'latest' }}
       run: |
         : Update lean-toolchain manually
-        echo "leanprover/lean4:${{ input.lean-version }}" > lean-toolchain
+        echo "leanprover/lean4:${{ inputs.lean-version }}" > lean-toolchain
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
