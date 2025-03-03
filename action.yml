@@ -26,7 +26,7 @@ inputs:
   update_if_modified:
     description: | # markdown
       Specifies which files, when updated during `lake update`, will cause the action to update code or notify the user.
-      Therefore, this option does not affect the behavior when the build/test/lint fail after `lake update`.
+      This option does not affect the behavior when the build/test/lint fail after `lake update`.
       Allowed values:
         * `lean-toolchain`:
           If `lean-toolchain` is specified, this GitHub Action will skip updates unless the Lean version is updated.
