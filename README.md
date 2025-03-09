@@ -55,7 +55,7 @@ jobs:
 
 ### If you want to receive notifications on Zulip when the update fails
 
-After registering your Zulip API Key in your repository SECRETS, configure as follows:
+After registering your Zulip API Key in your repository secrets, configure as follows:
 
 ```yml
 name: Update Lean Project
