@@ -71,6 +71,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Update Lean project
         id: lean-update
         uses: Seasawher/lean-update@main
@@ -78,17 +79,19 @@ jobs:
           on_update_fails: "silent"
 
       - name: Notifycation
-        if: steps.lean-update.outputs.result == 'update-fail'
+        if: steps.lean-update.outputs.result == 'update-fail'  # only send a message when the update fails
         uses: zulip/github-actions-zulip/send-message@v1
         with:
-          api-key: ${{ secrets.ZULIP_API_KEY }}
-          email: <YOUR Zulip BOT's EMAIL>
+          api-key: ${{ secrets.ZULIP_API_KEY }} # Zulip API key of your bot
+          email: "lean-update-bot@leanprover.zulipchat.com"
           organization-url: 'https://leanprover.zulipchat.com'
-          to: <YOUR Zulip STREAM NAME>
-          type: "stream"
-          topic: <YOUR TOPIC NAME>
+          to: "123456" # user_id
+          type: "private" # private message
           content: |
-             ❌ The update of ${{ github.repository }} has [failed](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
+             ❌ The update of ${{ github.repository }} has failed
+
+             - [See Action Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+             - [See Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
 ```
 
 ## Description of Functionality
