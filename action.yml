@@ -177,7 +177,7 @@ runs:
         title: "Updates available and ready to merge"
         body: ""
         delete-branch: true
-        branch: auto-update-lean
+        branch: auto-update-lean/patch
         branch-suffix: timestamp
         labels: "auto-update-lean"
         update-existing: true
