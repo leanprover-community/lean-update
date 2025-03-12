@@ -178,7 +178,6 @@ runs:
         body: ""
         delete-branch: true
         branch: auto-update-lean/patch
-        branch-suffix: timestamp
         labels: "auto-update-lean"
         update-existing: true
 
