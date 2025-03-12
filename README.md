@@ -83,7 +83,7 @@ jobs:
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_API_KEY }} # Zulip API key of your bot
-          email: "lean-update-bot@leanprover.zulipchat.com"
+          email: "***-bot@leanprover.zulipchat.com" # your Zulip bot's email
           organization-url: 'https://leanprover.zulipchat.com'
           to: "123456" # user_id
           type: "private" # private message
