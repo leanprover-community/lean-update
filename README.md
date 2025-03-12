@@ -55,7 +55,9 @@ jobs:
 
 ### If you want to receive notifications on Zulip when the update fails
 
-After registering your Zulip API Key in your repository secrets, configure as follows:
+1. First, create a bot in Zulip and note its API key. Be careful not to create a new account - Zulip has a dedicated feature for "creating a bot".
+2. Next, register the bot's API key as a secret named `ZULIP_API_KEY` in your repository. You can set up secrets from the repository's "Settings".
+3. Prepare a workflow file like the following:
 
 ```yml
 name: Update Lean Project
