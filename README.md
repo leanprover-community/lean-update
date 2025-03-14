@@ -166,6 +166,12 @@ A Github token to be used for committing and creating issues/PRs.
 
 Default: `${{ github.token }}`
 
+### `legacy_update`
+
+If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
+
+Default: `false`
+
 ## Outputs
 
 ### `result`

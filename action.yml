@@ -41,6 +41,11 @@ inputs:
       This parameter determines what to pass to the build-args argument of leanprover/lean-action.
     required: false
     default: "--log-level=warning"
+  legacy_update:
+    description: |
+      If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
+    required: false
+    default: "false"
   lake_package_directory:
     description: |
       The directory containing the Lake package to build.
@@ -96,7 +101,13 @@ runs:
     - name: Update dependencies of ${{ github.repository }}
       run: |
         : Update dependencies
-        lake update
+        if [ "${{ inputs.legacy_update }}" == "true" ]; then
+          echo "Using legacy update command"
+          lake -R -Kenv=dev update
+        else
+          echo "Using standard update command"
+          lake update
+        fi
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
