@@ -80,7 +80,7 @@ jobs:
         with:
           on_update_fails: "silent"
 
-      - name: Notifycation
+      - name: Notification
         if: steps.lean-update.outputs.result == 'update-fail'  # only send a message when the update fails
         uses: zulip/github-actions-zulip/send-message@v1
         with:
