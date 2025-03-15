@@ -194,21 +194,14 @@ runs:
 
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
-      run: | # bat
-        : Open issue if the updated lean build was successful
-        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
-        BULLET_LIST=""
-        for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST- $file\n"
-        done
-        BODY="Files changed in update:\n$BULLET_LIST"
-        gh issue create --title "$TITLE" --body "$BODY"
+      uses: JasonEtco/create-an-issue@v2
       env:
-        # Could be best to use the default token here
-        GH_TOKEN: ${{ inputs.token }}
-        GH_REPO: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
         TITLE: Updates available and have been tested to build correctly
-      shell: bash
+      with:
+        filename: .github/ISSUE_TEMPLATE/update-success.md
+        update_existing: true
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.do_update == 'true'
