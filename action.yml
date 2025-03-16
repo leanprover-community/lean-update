@@ -195,28 +195,17 @@ runs:
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
       run: | # bat
         : Open issue if the updated lean build was successful
-        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
-        BULLET_LIST=""
-        for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST
-        - $file"
-        done
-        BODY="Files changed in update:
+        TITLE="Updates available and have been tested to build correctly"
+        DESCRIPTION=""
+        LABEL_NAME="auto-update-lean"
+        LABEL_COLOR="0E8A16"
 
-        $BULLET_LIST"
-
-        # Check if label exists, create it if it doesn't
-        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean --silent 2>/dev/null; then
-          echo "Creating auto-update-lean label..."
-          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean" -F color="0E8A16" -F description="Auto update for Lean dependencies"
-        fi
-
-        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean"
+        source ${{ github.action_path }}/scripts/create-issue.sh
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        TITLE: Updates available and have been tested to build correctly
+        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
       shell: bash
 
     - name: Commit update if the updated lean build was successful
@@ -235,27 +224,16 @@ runs:
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: | # bat
         : Open issue if the updated lean build fails
-        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
-        BULLET_LIST=""
-        for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST
-        - $file"
-        done
-        BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.
+        TITLE="Updates available but manual intervention required"
+        DESCRIPTION="Try \`lake update\` and then investigate why this update causes the lean build to fail."
+        LABEL_NAME="auto-update-lean-fail"
+        LABEL_COLOR="D73A4A"
 
-        Files changed in update:$BULLET_LIST"
-
-        # Check if label exists, create it if it doesn't
-        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean-fail --silent 2>/dev/null; then
-          echo "Creating auto-update-lean-fail label..."
-          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean-fail" -F color="D73A4A" -F description="Auto update for Lean dependencies"
-        fi
-
-        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean-fail"
+        source ${{ github.action_path }}/scripts/create-issue.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        TITLE: "Updates available but manual intervention required"
+        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
       shell: bash
 
     - name: Action fails if the updated lean build fails
