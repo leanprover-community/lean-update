@@ -201,7 +201,14 @@ runs:
           BULLET_LIST="$BULLET_LIST- $file\n"
         done
         BODY="Files changed in update:\n$BULLET_LIST"
-        gh issue create --title "$TITLE" --body "$BODY"
+
+        # Check if label exists, create it if it doesn't
+        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean --silent 2>/dev/null; then
+          echo "Creating auto-update-lean label..."
+          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean" -F color="0E8A16" -F description="Auto update for Lean dependencies"
+        fi
+
+        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean"
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
@@ -234,7 +241,14 @@ runs:
         BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.
 
         Files changed in update:$BULLET_LIST"
-        gh issue create --title "$TITLE" --body "$BODY"
+
+        # Check if label exists, create it if it doesn't
+        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean --silent 2>/dev/null; then
+          echo "Creating auto-update-lean label..."
+          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean" -F color="0E8A16" -F description="Auto update for Lean dependencies"
+        fi
+
+        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean"
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
