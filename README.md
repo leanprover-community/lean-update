@@ -117,8 +117,8 @@ What to do when an update is available and the build is successful.
 Allowed values:
 * `silent`: Do nothing
 * `commit`: directly commit the updated files
-* `issue`: notify the user by creating an issue
-* `pr`: notify the user by creating a pull request
+* `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+* `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
 
 Default: `pr`.
 
@@ -128,8 +128,8 @@ What to do when an update is available and the build fails.
 
 Allowed values:
 * `silent`: Do nothing
-* `issue`: notify the user by creating an issue
-* `pr`: notify the user by creating a pull request
+* `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+* `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
 
 Default: `issue`.
 

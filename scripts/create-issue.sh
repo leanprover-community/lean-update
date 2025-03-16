@@ -18,5 +18,10 @@ if ! gh api repos/$GH_REPO/labels/$LABEL_NAME --silent 2>/dev/null; then
   gh api repos/$GH_REPO/labels -F name="$LABEL_NAME" -F color="$LABEL_COLOR" -F description="Auto update for Lean dependencies"
 fi
 
-# Create the issue
-gh issue create --title "$TITLE" --body "$BODY" --label "$LABEL_NAME"
+# Check if an open issue with the same label already exists
+if gh issue list --label "$LABEL_NAME" --state open --json number | grep -q "number"; then
+  echo "An open issue with label '$LABEL_NAME' already exists. Skipping issue creation."
+else
+  # Create the issue
+  gh issue create --title "$TITLE" --body "$BODY" --label "$LABEL_NAME"
+fi
