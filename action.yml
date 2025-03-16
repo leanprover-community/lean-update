@@ -198,9 +198,12 @@ runs:
         CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
         BULLET_LIST=""
         for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST- $file\n"
+          BULLET_LIST="$BULLET_LIST
+        - $file"
         done
-        BODY="Files changed in update:\n$BULLET_LIST"
+        BODY="Files changed in update:
+
+        $BULLET_LIST"
 
         # Check if label exists, create it if it doesn't
         if ! gh api repos/${{ github.repository }}/labels/auto-update-lean --silent 2>/dev/null; then
