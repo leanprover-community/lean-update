@@ -196,7 +196,7 @@ runs:
       run: | # bat
         : Open issue if the updated lean build was successful
         TITLE="Updates available and have been tested to build correctly"
-        DESCRIPTION="Files changed in update:"
+        DESCRIPTION=""
         LABEL_NAME="auto-update-lean"
         LABEL_COLOR="0E8A16"
 
