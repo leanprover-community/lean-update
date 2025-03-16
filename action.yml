@@ -243,12 +243,12 @@ runs:
         Files changed in update:$BULLET_LIST"
 
         # Check if label exists, create it if it doesn't
-        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean --silent 2>/dev/null; then
-          echo "Creating auto-update-lean label..."
-          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean" -F color="0E8A16" -F description="Auto update for Lean dependencies"
+        if ! gh api repos/${{ github.repository }}/labels/auto-update-lean-fail --silent 2>/dev/null; then
+          echo "Creating auto-update-lean-fail label..."
+          gh api repos/${{ github.repository }}/labels -F name="auto-update-lean-fail" -F color="D73A4A" -F description="Auto update for Lean dependencies"
         fi
 
-        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean"
+        gh issue create --title "$TITLE" --body "$BODY" --label "auto-update-lean-fail"
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
