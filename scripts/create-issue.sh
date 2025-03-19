@@ -8,7 +8,7 @@ for file in $CHANGED_FILES; do
 done
 
 # Run lake build and capture its output
-BUILD_OUTPUT=$(lake build --log-level=warning 2>&1)
+BUILD_OUTPUT=$(lake build --log-level=warning)
 
 # Create the body of the issue
 BODY="$DESCRIPTION
