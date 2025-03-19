@@ -7,10 +7,23 @@ for file in $CHANGED_FILES; do
 - $file"
 done
 
+# Get directory contents
+DIR_CONTENTS=$(ls -la)
+echo "Directory contents: $DIR_CONTENTS"
+
+# Run lake build and capture its output
+# Using || true to ensure the script continues even if lake build fails
+BUILD_OUTPUT=$(lake build --log-level=warning 2>&1 || true)
+
 # Create the body of the issue
 BODY="$DESCRIPTION
 
-Files changed in update:$BULLET_LIST"
+Files changed in update:$BULLET_LIST
+
+## Build Output
+
+$BUILD_OUTPUT
+"
 
 # Check if the label exists, create it if not
 if ! gh api repos/$GH_REPO/labels/$LABEL_NAME --silent 2>/dev/null; then
