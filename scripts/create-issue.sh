@@ -7,8 +7,12 @@ for file in $CHANGED_FILES; do
 - $file"
 done
 
+# Get directory contents
+DIR_CONTENTS=$(ls -la)
+echo "Directory contents: $DIR_CONTENTS"
+
 # Run lake build and capture its output
-BUILD_OUTPUT=$(lake build --log-level=warning)
+BUILD_OUTPUT=$(lake build --log-level=warning 2>&1)
 
 # Create the body of the issue
 BODY="$DESCRIPTION
@@ -16,7 +20,6 @@ BODY="$DESCRIPTION
 Files changed in update:$BULLET_LIST
 
 ## Build Output
-
 ```
 $BUILD_OUTPUT
 ```"

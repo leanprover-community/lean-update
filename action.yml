@@ -236,6 +236,7 @@ runs:
         GH_REPO: ${{ github.repository }}
         CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
