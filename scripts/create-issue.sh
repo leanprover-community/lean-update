@@ -12,7 +12,8 @@ DIR_CONTENTS=$(ls -la)
 echo "Directory contents: $DIR_CONTENTS"
 
 # Run lake build and capture its output
-BUILD_OUTPUT=$(lake build --log-level=warning 2>&1)
+# Using || true to ensure the script continues even if lake build fails
+BUILD_OUTPUT=$(lake build --log-level=warning 2>&1 || true)
 
 # Create the body of the issue
 BODY="$DESCRIPTION
