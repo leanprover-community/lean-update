@@ -5,6 +5,6 @@
     "action.yml": "github-actions-workflow"
   },
   "files.exclude": {
-    "**/.git": false,
+    "**/.git": true,
   }
 }
