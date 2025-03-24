@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update Lean project
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
 ```
 
 ### When you only want to update when there is a new Lean version
@@ -48,7 +48,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Update Lean project
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
         with:
           update_if_modified: lean-toolchain
 ```
@@ -76,7 +76,7 @@ jobs:
 
       - name: Update Lean project
         id: lean-update
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
         with:
           on_update_fails: "silent"
 
