@@ -19,7 +19,6 @@ jobs:
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
-          lean_version: "v4.17.0-rc1"
 
       - name: This update should succeed
         if: steps.update.outputs.result != 'update-success'
@@ -37,7 +36,6 @@ jobs:
         with:
           on_update_fails: "silent"
           lake_package_directory: "./test/Fail"
-          lean_version: "v4.17.0-rc1"
 
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'
@@ -55,7 +53,6 @@ jobs:
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
-          lean_version: "v4.17.0-rc1"
 
       - name: output assertion of latest_lean
         run: | # bat
