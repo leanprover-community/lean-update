@@ -46,7 +46,8 @@ if (updateIfModified === 'lean-toolchain') {
 const result = {
   files_changed: changedFiles.length > 0,
   do_update: doUpdate,
-  changed_files: changedFiles.join(' ')
+  changed_files: changedFiles.join(' '),
+  lean_toolchain_updated: fileChanges['lean-toolchain']
 };
 
 console.log('info:', JSON.stringify(result, null, 2));
@@ -57,4 +58,5 @@ if (githubOutput) {
   fs.appendFileSync(githubOutput, `files_changed=${result.files_changed}\n`);
   fs.appendFileSync(githubOutput, `changed_files=${result.changed_files}\n`);
   fs.appendFileSync(githubOutput, `do_update=${result.do_update}\n`);
+  fs.appendFileSync(githubOutput, `lean_toolchain_updated=${result.lean_toolchain_updated}\n`);
 }
