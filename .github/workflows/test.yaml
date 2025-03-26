@@ -15,7 +15,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: Seasawher/lean-update@develop
+        uses: leanprover-community/lean-update@develop
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
@@ -33,7 +33,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: Seasawher/lean-update@develop
+        uses: leanprover-community/lean-update@develop
         with:
           on_update_fails: "silent"
           lake_package_directory: "./test/Fail"
@@ -51,7 +51,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: Seasawher/lean-update@develop
+        uses: leanprover-community/lean-update@develop
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"

@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update Lean project
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
 ```
 
 ### When you only want to update when there is a new Lean version
@@ -48,14 +48,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Update Lean project
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
         with:
           update_if_modified: lean-toolchain
 ```
 
 ### If you want to receive notifications on Zulip when the update fails
 
-After registering your Zulip API Key in your repository SECRETS, configure as follows:
+1. First, create a bot in Zulip and note its API key. Be careful not to create a new account - Zulip has a dedicated feature for "creating a bot".
+2. Next, register the bot's API key as a secret named `ZULIP_API_KEY` in your repository. You can set up secrets from the repository's "Settings".
+3. Prepare a workflow file like the following:
 
 ```yml
 name: Update Lean Project
@@ -71,24 +73,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Update Lean project
         id: lean-update
-        uses: Seasawher/lean-update@main
+        uses: leanprover-community/lean-update@main
         with:
           on_update_fails: "silent"
 
-      - name: Notifycation
-        if: steps.lean-update.outputs.result == 'update-fail'
+      - name: Notification
+        if: steps.lean-update.outputs.result == 'update-fail'  # only send a message when the update fails
         uses: zulip/github-actions-zulip/send-message@v1
         with:
-          api-key: ${{ secrets.ZULIP_API_KEY }}
-          email: <YOUR Zulip BOT's EMAIL>
+          api-key: ${{ secrets.ZULIP_API_KEY }} # Zulip API key of your bot
+          email: "***-bot@leanprover.zulipchat.com" # your Zulip bot's email
           organization-url: 'https://leanprover.zulipchat.com'
-          to: <YOUR Zulip STREAM NAME>
-          type: "stream"
-          topic: <YOUR TOPIC NAME>
+          to: "123456" # user_id
+          type: "private" # private message
           content: |
-             ❌ The update of ${{ github.repository }} has [failed](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}) ([${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})).
+             ❌ The update of ${{ github.repository }} has failed
+
+             - [See Action Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+             - [See Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
 ```
 
 ## Description of Functionality
@@ -112,8 +117,8 @@ What to do when an update is available and the build is successful.
 Allowed values:
 * `silent`: Do nothing
 * `commit`: directly commit the updated files
-* `issue`: notify the user by creating an issue
-* `pr`: notify the user by creating a pull request
+* `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+* `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
 
 Default: `pr`.
 
@@ -123,8 +128,8 @@ What to do when an update is available and the build fails.
 
 Allowed values:
 * `silent`: Do nothing
-* `issue`: notify the user by creating an issue
-* `pr`: notify the user by creating a pull request
+* `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+* `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
 
 Default: `issue`.
 
@@ -160,6 +165,12 @@ Default: `.`
 A Github token to be used for committing and creating issues/PRs.
 
 Default: `${{ github.token }}`
+
+### `legacy_update`
+
+If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
+
+Default: `false`
 
 ## Outputs
 

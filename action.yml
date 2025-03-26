@@ -8,8 +8,8 @@ inputs:
       Allowed values:
         * `silent`: Do nothing
         * `commit`: directly commit the updated files
-        * `issue`: notify the user by creating an issue
-        * `pr`: notify the user by creating a pull request
+        * `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+        * `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
       Default: `pr`.
     required: false
     default: "pr"
@@ -18,8 +18,8 @@ inputs:
       What to do when an update is available and the build fails.
       Allowed values:
         * `silent`: Do nothing
-        * `issue`: notify the user by creating an issue
-        * `pr`: notify the user by creating a pull request
+        * `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
+        * `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
       Default: `issue`.
     required: false
     default: "issue"
@@ -41,6 +41,11 @@ inputs:
       This parameter determines what to pass to the build-args argument of leanprover/lean-action.
     required: false
     default: "--log-level=warning"
+  legacy_update:
+    description: |
+      If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
+    required: false
+    default: "false"
   lake_package_directory:
     description: |
       The directory containing the Lake package to build.
@@ -112,9 +117,15 @@ runs:
       shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
-      run: |
+      run: | #bat
         : Update dependencies
-        lake update
+        if [ "${{ inputs.legacy_update }}" == "true" ]; then
+          echo "Using legacy update command"
+          lake -R -Kenv=dev update
+        else
+          echo "Using standard update command"
+          lake update
+        fi
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
@@ -158,7 +169,7 @@ runs:
 
     - name: Record the latest Lean version
       id: record-latest-lean
-      run: |
+      run: | #bat
         : Record the latest Lean version
         LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
         echo "Latest Lean release is: $LEAN_VERSION"
@@ -168,7 +179,7 @@ runs:
 
     - name: Record the notify status
       id: record-notify
-      run: |
+      run: | #bat
         : Record the notify status
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No updates available, no need to notify"
@@ -195,27 +206,26 @@ runs:
         title: "Updates available and ready to merge"
         body: ""
         delete-branch: true
-        branch-suffix: random
-        branch: auto-update/patch
+        branch: auto-update-lean/patch
         labels: "auto-update-lean"
 
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
       run: | # bat
         : Open issue if the updated lean build was successful
-        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
-        BULLET_LIST=""
-        for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST- $file\n"
-        done
-        BODY="Files changed in update:\n$BULLET_LIST"
-        gh issue create --title "$TITLE" --body "$BODY"
+        TITLE="Updates available and have been tested to build correctly"
+        DESCRIPTION=""
+        LABEL_NAME="auto-update-lean"
+        LABEL_COLOR="0E8A16"
+
+        source ${{ github.action_path }}/scripts/create-issue.sh
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        TITLE: Updates available and have been tested to build correctly
+        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.do_update == 'true'
@@ -233,21 +243,18 @@ runs:
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: | # bat
         : Open issue if the updated lean build fails
-        CHANGED_FILES="${{ steps.check-update.outputs.changed_files }}"
-        BULLET_LIST=""
-        for file in $CHANGED_FILES; do
-          BULLET_LIST="$BULLET_LIST
-        - $file"
-        done
-        BODY="Try \`lake update\` and then investigate why this update causes the lean build to fail.
+        TITLE="Updates available but manual intervention required"
+        DESCRIPTION="Try \`lake update\` and then investigate why this update causes the lean build to fail."
+        LABEL_NAME="auto-update-lean-fail"
+        LABEL_COLOR="D73A4A"
 
-        Files changed in update:$BULLET_LIST"
-        gh issue create --title "$TITLE" --body "$BODY"
+        source ${{ github.action_path }}/scripts/create-issue.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        TITLE: "Updates available but manual intervention required"
+        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
       shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
