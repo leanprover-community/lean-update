@@ -22,9 +22,9 @@ Files changed in update:$BULLET_LIST
 
 ## Build Output
 
-```
+\`\`\`
 $BUILD_OUTPUT
-```
+\`\`\`
 "
 
 # Check if the label exists, create it if not
