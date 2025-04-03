@@ -82,7 +82,32 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: find dependencies
+      id: find-dependencies
+      run: | # bat
+        : Find dependencies
+        file_path="lake-manifest.json"
+
+        if [ ! -f "$file_path" ]; then
+            echo "File not found: $file_path"
+            exit 1
+        fi
+
+        line_count=$(wc -l < "$file_path")
+        echo "Number of lines in $file_path: $line_count"
+
+        if [ "$line_count" -ge 10 ]; then
+            echo "the repository has some dependencies."
+            echo "outcome=has-depencency" >> $GITHUB_OUTPUT
+        else
+            echo "the repository has no dependencies."
+            echo "outcome=no-depencency" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+      working-directory: ${{ inputs.lake_package_directory }}
+
     - name: Update lean-toolchain
+      if: ${{ steps.find-dependencies.outputs.outcome == 'no-depencency' }}
       run: |
         : Update lean-toolchain
         node ${{ github.action_path }}/scripts/getLatest.js
