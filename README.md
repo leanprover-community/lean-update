@@ -4,6 +4,10 @@ A GitHub Action that attempts to update Lean and dependencies of a Lean project.
 
 ## Quick Setup
 
+First, go to the repository settings and change the permissions for GitHub Actions to `read and write permissions`, and allow the creation of pull requests.
+
+![permission setting](./permission.png)
+
 Create a file named `update.yml` in the `.github/workflows` directory.
 
 ### If you want to keep dependencies always up-to-date
