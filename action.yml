@@ -222,6 +222,7 @@ runs:
         delete-branch: true
         branch: auto-update-lean/patch
         labels: "auto-update-lean"
+        token: ${{ inputs.token }}
 
     - name: Open PR if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' &&
