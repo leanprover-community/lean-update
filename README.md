@@ -4,10 +4,6 @@ A GitHub Action that attempts to update Lean and dependencies of a Lean project.
 
 ## Quick Setup
 
-First, go to the repository settings and change the permissions for GitHub Actions to `read and write permissions`, and allow the creation of pull requests.
-
-![permission setting](./permission.png)
-
 Create a file named `update.yml` in the `.github/workflows` directory.
 
 ### If you want to keep dependencies always up-to-date
@@ -24,6 +20,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,6 +49,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -73,6 +81,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
