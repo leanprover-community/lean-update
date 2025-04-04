@@ -20,6 +20,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -43,6 +49,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -69,6 +81,12 @@ on:
 
 jobs:
   update_lean:
+    # this is needed for private repositories
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
