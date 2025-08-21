@@ -178,6 +178,16 @@ This parameter is passed to the lake-package-directory argument of leanprover/le
 
 Default: `.`
 
+### `update_lean_toolchain`
+
+Controls whether to update the lean-toolchain file for projects with no dependencies.
+
+Allowed values:
+* `auto`: Automatically update lean-toolchain to the latest stable release (default behavior)
+* `never`: Never update the lean-toolchain file
+
+Default: `auto`
+
 ### `token`
 
 A Github token to be used for committing and creating issues/PRs.
