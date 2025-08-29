@@ -1,7 +1,7 @@
 name: Test
 
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
@@ -32,7 +32,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_fails: "silent"
           lake_package_directory: "./test/Fail"
@@ -49,7 +49,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"

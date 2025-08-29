@@ -1,7 +1,7 @@
 name: Notification Test
 
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
 
       - name: PR creation test
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_succeeds: "pr"
           lake_package_directory: "./test/Foo"
@@ -30,7 +30,7 @@ jobs:
 
       - name: Issue creation test
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_succeeds: "issue"
           lake_package_directory: "./test/Foo"
@@ -43,7 +43,7 @@ jobs:
 
       - name: Issue creation test
         id: update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_fails: "issue"
           lake_package_directory: "./test/Fail"
@@ -56,7 +56,7 @@ jobs:
 
       - name: Zulip notification test
         id: lean-update
-        uses: leanprover-community/lean-update@develop
+        uses: leanprover-community/lean-update@main
         with:
           on_update_fails: "silent"
           lake_package_directory: "./test/Fail"
