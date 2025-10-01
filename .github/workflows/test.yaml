@@ -32,7 +32,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@main
+        uses: ./
         with:
           on_update_fails: "silent"
           lake_package_directory: "./test/Fail"
@@ -49,13 +49,13 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@main
+        uses: ./
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
 
       - name: output assertion of latest_lean
-        run: | # bat
+        run: |
           echo "Latest Lean version: ${{ steps.update.outputs.latest_lean }}"
           if [[ ! "${{ steps.update.outputs.latest_lean }}" =~ ^v ]]; then
             echo "Error: The latest_lean output should start with 'v'"
@@ -64,7 +64,7 @@ jobs:
           echo "latest_lean output test passed"
 
       - name: output assertion of notify
-        run: | # bat
+        run: |
           echo "Notify status: ${{ steps.update.outputs.notify }}"
           if [[ "${{ steps.update.outputs.notify }}" != "true" ]]; then
             echo "Error: The notify output should be 'true' for this test case"
