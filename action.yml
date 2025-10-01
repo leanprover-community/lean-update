@@ -1,9 +1,51 @@
 name: "Lean update"
 description: "Attempts to update lean and dependencies of a lean project"
 author: "Oliver Butterley, Asei Inoue(Seasawher)"
+
 inputs:
+  # ----------------------------- #
+  # general configuration options #
+  # ----------------------------- #
+  lake_package_directory:
+    description: |
+      The directory containing the Lake package to build.
+      This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
+    required: false
+    default: "."
+
+  # -------------------------------- #
+  # fetching the latest Lean release #
+  # -------------------------------- #
+  update_lean_toolchain:
+    description: |
+      Controls whether to update the lean-toolchain file for projects with no dependencies.
+      Allowed values:
+        * `auto`: Automatically update lean-toolchain to the latest release (default behavior)
+        * `never`: Never update the lean-toolchain file
+      Default: `auto`
+    required: false
+    default: "auto"
+
+  # ------------------------------------ #
+  # run `lake update` and run build/test #
+  # ------------------------------------ #
+  legacy_update:
+    description: |
+      If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
+    required: false
+    default: "false"
+  build_args:
+    description: |
+      This GitHub Action uses leanprover/lean-action to build and test the repository.
+      This parameter determines what to pass to the build-args argument of leanprover/lean-action.
+    required: false
+    default: "--log-level=warning"
+
+  # ------------------------- #
+  # commit or notify the user #
+  # ------------------------- #
   on_update_succeeds:
-    description: | # markdown
+    description: |
       What to do when an update is available and the build is successful.
       Allowed values:
         * `silent`: Do nothing
@@ -14,7 +56,7 @@ inputs:
     required: false
     default: "pr"
   on_update_fails:
-    description: | # markdown
+    description: |
       What to do when an update is available and the build fails.
       Allowed values:
         * `silent`: Do nothing
@@ -24,7 +66,7 @@ inputs:
     required: false
     default: "issue"
   update_if_modified:
-    description: | # markdown
+    description: |
       Specifies which files, when updated during `lake update`, will cause the action to update code or notify the user.
       This option does not affect the behavior when the build/test/lint fail after `lake update`.
       Allowed values:
@@ -35,40 +77,15 @@ inputs:
       Default: `lake-manifest.json`
     required: false
     default: "lake-manifest.json"
-  build_args:
-    description: |
-      This GitHub Action uses leanprover/lean-action to build and test the repository.
-      This parameter determines what to pass to the build-args argument of leanprover/lean-action.
-    required: false
-    default: "--log-level=warning"
-  legacy_update:
-    description: |
-      If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
-    required: false
-    default: "false"
-  lake_package_directory:
-    description: |
-      The directory containing the Lake package to build.
-      This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
-    required: false
-    default: "."
-  update_lean_toolchain:
-    description: |
-      Controls whether to update the lean-toolchain file for projects with no dependencies.
-      Allowed values:
-        * `auto`: Automatically update lean-toolchain to the latest stable release (default behavior)
-        * `never`: Never update the lean-toolchain file
-      Default: `auto`
-    required: false
-    default: "auto"
   token:
     description: |
       A Github token to be used for committing
     required: false
     default: ${{ github.token }}
+
 outputs:
   result:
-    description: | # markdown
+    description: |
       The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios.
 
       Description of each value:
@@ -77,17 +94,18 @@ outputs:
         * `update-fail`: An update was available but the lean-action step failed.
     value: ${{ steps.record-result.outputs.outcome }}
   latest_lean:
-    description: | # markdown
+    description: |
       The latest Lean release version, including both stable and pre-release versions.
     value: ${{ steps.record-latest-lean.outputs.latest_lean }}
   notify:
-    description: | # markdown
+    description: |
       Indicates whether there is an event worth notifying the user about.
       Returns `true` in the following cases:
         * When updates are available and the build succeeds. However, if `update_if_modified` is set to `lean-toolchain`, this is only true when the Lean version has been updated.
         * When updates are available and the build fails.
       Returns `false` in all other cases.
     value: ${{ steps.record-notify.outputs.notify }}
+
 runs:
   using: "composite"
   steps:
@@ -116,7 +134,7 @@ runs:
       shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
-      run: | #bat
+      run: |
         : Update dependencies
         if [ "${{ inputs.legacy_update }}" == "true" ]; then
           echo "Using legacy update command"
