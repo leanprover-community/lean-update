@@ -1,0 +1,57 @@
+name: Notification Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  pr_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: "main"
+
+      - name: PR creation test
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "pr"
+          lake_package_directory: "./test/Foo"
+
+      - name: close PR
+        run: |
+          gh pr list --state open --label "auto-update-lean" --json number,title -q '.[].number' \
+          | xargs -n1 -I{} gh pr close {} --delete-branch
+
+  issue_when_succeed_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Issue creation test
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "issue"
+          lake_package_directory: "./test/Foo"
+
+  issue_when_fail_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Issue creation test
+        id: update
+        uses: ./
+        with:
+          on_update_fails: "issue"
+          lake_package_directory: "./test/Fail"
