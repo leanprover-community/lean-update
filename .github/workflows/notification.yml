@@ -51,6 +51,19 @@ jobs:
           on_update_succeeds: "issue"
           lake_package_directory: "./test/Foo"
 
+      - name: close issue
+        run: |
+          number=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --label auto-update-lean \
+            --state open \
+            --json number \
+            --jq '.[].number')
+          gh issue close ${number}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+
   issue_when_fail_test:
     runs-on: ubuntu-latest
     steps:
@@ -63,3 +76,16 @@ jobs:
         with:
           on_update_fails: "issue"
           lake_package_directory: "./test/Fail"
+
+      - name: close issue
+        run: |
+          number=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --label auto-update-lean-fail \
+            --state open \
+            --json number \
+            --jq '.[].number')
+          gh issue close ${number}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
