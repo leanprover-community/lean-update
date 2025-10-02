@@ -27,15 +27,14 @@ jobs:
 
       - name: close PR
         run: |
+          sleep 10  # wait for the PR to be fully created
           number=$(gh pr list \
             --repo ${{ github.repository }} \
             --label auto-update-lean \
             --state open \
             --json number \
             --jq '.[].number')
-          if [[ -n "$number" ]]; then
-            gh pr close ${number} --delete-branch
-          fi
+          gh pr close ${number} --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -55,15 +54,14 @@ jobs:
 
       - name: close issue
         run: |
+          sleep 10  # wait for the issue to be fully created
           number=$(gh issue list \
             --repo ${{ github.repository }} \
             --label auto-update-lean \
             --state open \
             --json number \
             --jq '.[].number')
-          if [[ -n "$number" ]]; then
-            gh issue close ${number}
-          fi
+          gh issue close ${number}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -83,15 +81,14 @@ jobs:
 
       - name: close issue
         run: |
+          sleep 10  # wait for the issue to be fully created
           number=$(gh issue list \
             --repo ${{ github.repository }} \
             --label auto-update-lean-fail \
             --state open \
             --json number \
             --jq '.[].number')
-          if [[ -n "$number" ]]; then
-            gh issue close ${number}
-          fi
+          gh issue close ${number}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
