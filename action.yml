@@ -170,7 +170,7 @@ runs:
     # -------------------------------- #
     - name: Record the outcome
       id: record-result
-      run: | # bat
+      run: |
         : Record the outcome
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No update available"
@@ -186,7 +186,7 @@ runs:
 
     - name: Record the latest Lean version
       id: record-latest-lean
-      run: | #bat
+      run: |
         : Record the latest Lean version
         LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
         echo "Latest Lean release is: $LEAN_VERSION"
@@ -196,7 +196,7 @@ runs:
 
     - name: Record the notify status
       id: record-notify
-      run: | #bat
+      run: |
         : Record the notify status
         if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
           echo "No updates available, no need to notify"
@@ -248,7 +248,7 @@ runs:
 
     - name: Open issue if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
-      run: | # bat
+      run: |
         : Open issue if the updated lean build was successful
         TITLE="Updates available and have been tested to build correctly"
         DESCRIPTION=""
@@ -278,7 +278,7 @@ runs:
     # ----------------- #
     - name: Open issue if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
-      run: | # bat
+      run: |
         : Open issue if the updated lean build fails
         TITLE="Updates available but manual intervention required"
         DESCRIPTION="Try \`lake update\` and then investigate why this update causes the lean build to fail."
