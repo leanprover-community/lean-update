@@ -18,7 +18,7 @@ jobs:
 
       - name: Update Lean package
         id: update
-        uses: leanprover-community/lean-update@main
+        uses: ./
         with:
           on_update_succeeds: "silent"
           lake_package_directory: "./test/Foo"
