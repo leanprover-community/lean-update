@@ -30,10 +30,10 @@ jobs:
           number=$(gh pr list \
             --repo ${{ github.repository }} \
             --label auto-update-lean \
-            --state all \
+            --state open \
             --json number \
             --jq '.[].number')
-          echo ${number}
+          gh pr close ${number}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
