@@ -27,8 +27,14 @@ jobs:
 
       - name: close PR
         run: |
-          gh pr list --state open --label "auto-update-lean" --json number,title -q '.[].number' \
-          | xargs -n1 -I{} gh pr close {} --delete-branch
+          number=$(gh pr list \
+            --repo ${{ github.repository }} \
+            --label auto-update-lean \
+            --state all \
+            --json number \
+            --jq '.[].number')
+          echo ${number}
+        shell: bash
 
   issue_when_succeed_test:
     runs-on: ubuntu-latest
