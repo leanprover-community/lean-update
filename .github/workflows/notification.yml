@@ -33,7 +33,9 @@ jobs:
             --state open \
             --json number \
             --jq '.[].number')
-          gh pr close ${number} --delete-branch
+          if [[ -n "$number" ]]; then
+            gh pr close ${number} --delete-branch
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -59,7 +61,9 @@ jobs:
             --state open \
             --json number \
             --jq '.[].number')
-          gh issue close ${number}
+          if [[ -n "$number" ]]; then
+            gh issue close ${number}
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -85,7 +89,9 @@ jobs:
             --state open \
             --json number \
             --jq '.[].number')
-          gh issue close ${number}
+          if [[ -n "$number" ]]; then
+            gh issue close ${number}
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
