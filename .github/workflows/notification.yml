@@ -33,7 +33,7 @@ jobs:
             --state open \
             --json number \
             --jq '.[].number')
-          gh pr close ${number}
+          gh pr close ${number} --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
