@@ -75,3 +75,17 @@ jobs:
             exit 1
           fi
           echo "notify output test passed"
+
+  version_sorting_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run version sorting tests
+        run: node test/version-tests.js
