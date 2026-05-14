@@ -30,7 +30,7 @@ $BUILD_OUTPUT
 # Truncate body if it exceeds GitHub's 65536 character limit
 MAX_BODY_LEN=65536
 TRUNCATION_NOTICE="
-...(省略しています / truncated)"
+...(truncated)"
 if [ ${#BODY} -gt $MAX_BODY_LEN ]; then
   TRUNCATE_AT=$((MAX_BODY_LEN - ${#TRUNCATION_NOTICE}))
   BODY="${BODY:0:$TRUNCATE_AT}$TRUNCATION_NOTICE"
