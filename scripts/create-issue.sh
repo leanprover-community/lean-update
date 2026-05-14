@@ -15,26 +15,30 @@ echo "Directory contents: $DIR_CONTENTS"
 # Using || true to ensure the script continues even if lake build fails
 BUILD_OUTPUT=$(lake build --log-level=warning 2>&1 || true)
 
-# Create the body of the issue
-BODY="$DESCRIPTION
+# Truncate BUILD_OUTPUT if necessary to keep the full BODY within GitHub's
+# 65536-character limit, while preserving the surrounding Markdown structure.
+PREFIX="$DESCRIPTION
 
 Files changed in update:$BULLET_LIST
 
 ## Build Output
 
 \`\`\`
-$BUILD_OUTPUT
+"
+SUFFIX="
 \`\`\`
 "
-
-# Truncate body if it exceeds GitHub's 65536 character limit
-MAX_BODY_LEN=65536
 TRUNCATION_NOTICE="
 ...(truncated)"
-if [ ${#BODY} -gt $MAX_BODY_LEN ]; then
-  TRUNCATE_AT=$((MAX_BODY_LEN - ${#TRUNCATION_NOTICE}))
-  BODY="${BODY:0:$TRUNCATE_AT}$TRUNCATION_NOTICE"
+MAX_BODY_LEN=65536
+AVAILABLE=$((MAX_BODY_LEN - ${#PREFIX} - ${#SUFFIX}))
+if [ ${#BUILD_OUTPUT} -gt $AVAILABLE ]; then
+  TRUNCATE_AT=$((AVAILABLE - ${#TRUNCATION_NOTICE}))
+  BUILD_OUTPUT="${BUILD_OUTPUT:0:$TRUNCATE_AT}$TRUNCATION_NOTICE"
 fi
+
+# Create the body of the issue
+BODY="$PREFIX$BUILD_OUTPUT$SUFFIX"
 
 # Check if the label exists, create it if not
 if ! gh api repos/$GH_REPO/labels/$LABEL_NAME --silent 2>/dev/null; then
