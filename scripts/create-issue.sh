@@ -15,30 +15,46 @@ echo "Directory contents: $DIR_CONTENTS"
 # Using || true to ensure the script continues even if lake build fails
 BUILD_OUTPUT=$(lake build --log-level=warning 2>&1 || true)
 
-# Truncate BUILD_OUTPUT if necessary to keep the full BODY within GitHub's
-# 65536-character limit, while preserving the surrounding Markdown structure.
-PREFIX="$DESCRIPTION
+# Truncate variable sections if necessary to keep the full BODY within GitHub's
+# 65536-character limit, while preserving the build output code block.
+HEADER="$DESCRIPTION
 
 Files changed in update:$BULLET_LIST
+"
+BUILD_PREFIX="
 
 ## Build Output
 
 \`\`\`
 "
-SUFFIX="
+BUILD_SUFFIX="
 \`\`\`
 "
 TRUNCATION_NOTICE="
 ...(truncated)"
 MAX_BODY_LEN=65536
-AVAILABLE=$((MAX_BODY_LEN - ${#PREFIX} - ${#SUFFIX}))
+FIXED_LEN=$((${#BUILD_PREFIX} + ${#BUILD_SUFFIX}))
+AVAILABLE=$((MAX_BODY_LEN - ${#HEADER} - FIXED_LEN))
+if [ $AVAILABLE -lt 0 ]; then
+  HEADER_AVAILABLE=$((MAX_BODY_LEN - FIXED_LEN))
+  if [ $HEADER_AVAILABLE -gt ${#TRUNCATION_NOTICE} ]; then
+    HEADER="${HEADER:0:$((HEADER_AVAILABLE - ${#TRUNCATION_NOTICE}))}$TRUNCATION_NOTICE"
+  else
+    HEADER="${HEADER:0:$HEADER_AVAILABLE}"
+  fi
+  AVAILABLE=0
+fi
 if [ ${#BUILD_OUTPUT} -gt $AVAILABLE ]; then
-  TRUNCATE_AT=$((AVAILABLE - ${#TRUNCATION_NOTICE}))
-  BUILD_OUTPUT="${BUILD_OUTPUT:0:$TRUNCATE_AT}$TRUNCATION_NOTICE"
+  if [ $AVAILABLE -gt ${#TRUNCATION_NOTICE} ]; then
+    TRUNCATE_AT=$((AVAILABLE - ${#TRUNCATION_NOTICE}))
+    BUILD_OUTPUT="${BUILD_OUTPUT:0:$TRUNCATE_AT}$TRUNCATION_NOTICE"
+  else
+    BUILD_OUTPUT="${BUILD_OUTPUT:0:$AVAILABLE}"
+  fi
 fi
 
 # Create the body of the issue
-BODY="$PREFIX$BUILD_OUTPUT$SUFFIX"
+BODY="$HEADER$BUILD_PREFIX$BUILD_OUTPUT$BUILD_SUFFIX"
 
 # Check if the label exists, create it if not
 if ! gh api repos/$GH_REPO/labels/$LABEL_NAME --silent 2>/dev/null; then
