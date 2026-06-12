@@ -88,7 +88,7 @@ public def main : IO Unit := do
   let hasDep : Bool := !packageNames.isEmpty
   if hasDep then
     IO.println s!"The repository has some dependencies: {packageNames}"
-    GH.writeOutput "outcome" "has-dependency"
+    GH.writeOutput "has_dependency" "true"
   else
     IO.println "The repository has no dependencies."
-    GH.writeOutput "outcome" "no-dependency"
+    GH.writeOutput "has_dependency" "false"

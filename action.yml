@@ -87,7 +87,7 @@ outputs:
   has_dependency:
     description: |
       This value is `true` or `false` depending on whether the lake package has dependencies.
-    value: ${{ steps.find-dependencies.outputs.outcome == 'has-dependency' }}
+    value: ${{ steps.find-dependencies.outputs.has_dependency }}
   result:
     description: |
       The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios.
@@ -130,7 +130,7 @@ runs:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: Update lean-toolchain
-      if: ${{ steps.find-dependencies.outputs.outcome == 'no-dependency' && inputs.update_lean_toolchain == 'auto' }}
+      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
       run: |
         : Update lean-toolchain
         node ${{ github.action_path }}/scripts/getLatest.js
