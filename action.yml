@@ -109,15 +109,24 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: find dependencies
+    - name: Install elan
+      run: |
+        : Install elan
+        curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+        echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      shell: bash
+
+    - name: read lake-manifest.json and find dependencies
       id: find-dependencies
       run: |
-        node ${{ github.action_path }}/scripts/findDependencies.js
+        lake exe findDependencies
       shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
+      working-directory: ${{ github.action_path }}
+      env:
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: Update lean-toolchain
-      if: ${{ steps.find-dependencies.outputs.outcome == 'no-depencency' && inputs.update_lean_toolchain == 'auto' }}
+      if: ${{ steps.find-dependencies.outputs.outcome == 'no-dependency' && inputs.update_lean_toolchain == 'auto' }}
       run: |
         : Update lean-toolchain
         node ${{ github.action_path }}/scripts/getLatest.js
@@ -125,13 +134,6 @@ runs:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
-
-    - name: Install elan
-      run: |
-        : Install elan
-        curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
-        echo "$HOME/.elan/bin" >> $GITHUB_PATH
-      shell: bash
 
     - name: Update dependencies of ${{ github.repository }}
       run: |
