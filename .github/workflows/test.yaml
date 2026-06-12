@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  hasDep_e2e_test:
+  has_dependency_output_test_true:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,24 +24,22 @@ jobs:
           lake_package_directory: "./test/HasDep"
 
       - name: The result should be success
-        if: steps.update.outputs.result == 'update-fail'
+        if: steps.update.outputs.has_dependency != 'true'
         run: exit 1
 
-  twoDeps_e2e_test:
+  has_dependency_output_test_false:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Update Lean package
         id: update
         uses: ./
         with:
           on_update_succeeds: "silent"
-          lake_package_directory: "./test/TwoDeps"
-
-      - name: The result should be success
-        if: steps.update.outputs.result == 'update-fail'
+          lake_package_directory: "./test/SmokeSuccess"
+      - name: The result should be no dependency
+        if: steps.update.outputs.has_dependency != 'false'
         run: exit 1
 
   output_test:

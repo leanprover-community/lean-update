@@ -84,6 +84,10 @@ inputs:
     default: ${{ github.token }}
 
 outputs:
+  has_dependency:
+    description: |
+      This value is `true` or `false` depending on whether the lake package has dependencies.
+    value: ${{ steps.find-dependencies.outputs.outcome == 'has-dependency' }}
   result:
     description: |
       The action outputs `no-update`, `update-success` or `update-fail` depending on the three possible scenarios.
