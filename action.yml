@@ -221,7 +221,7 @@ runs:
           inputs.on_update_succeeds == 'pr' &&
           steps.check-update.outputs.do_update == 'true' &&
           steps.check-update.outputs.lean_toolchain_updated == 'true'
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         title: "Updates available and ready to merge"
         body: |
@@ -238,7 +238,7 @@ runs:
           inputs.on_update_succeeds == 'pr' &&
           steps.check-update.outputs.do_update == 'true' &&
           steps.check-update.outputs.lean_toolchain_updated == 'false'
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         title: "Updates available and ready to merge"
         body: ""
@@ -266,7 +266,7 @@ runs:
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.do_update == 'true'
-      uses: EndBug/add-and-commit@v9.1.4
+      uses: EndBug/add-and-commit@v10
       with:
         default_author: github_actions
       env:
