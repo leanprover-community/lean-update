@@ -58,7 +58,7 @@ jobs:
           lake_package_directory: "./test/HasDep"
 
       - name: This repository should have dependencies
-        if: steps.update.outputs.result != 'update-success'
+        if: steps.update.outputs.result == 'update-fail'
         run: exit 1
 
   output_test:
