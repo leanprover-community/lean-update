@@ -1,0 +1,10 @@
+name = "SmokeSuccess"
+version = "0.1.0"
+defaultTargets = ["smokeSuccess"]
+
+[[lean_lib]]
+name = "SmokeSuccess"
+
+[[lean_exe]]
+name = "smokeSuccess"
+root = "Main"
