@@ -3,7 +3,16 @@ module
 public import Lean
 import Src.GH
 
-open Lean Std
+open Lean Std System
+
+/-- resolve a Lake package directory relative to the GitHub workspace when available -/
+public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : FilePath) : FilePath :=
+  if packageDir.isRelative then
+    match workspace? with
+    | .some workspace => workspace / packageDir
+    | .none => packageDir
+  else
+    packageDir
 
 /-- detect if a JSON object has a nonempty array or object at the given key -/
 public def jsonHasNonemptyValue (json : Json) (key : String) : Bool :=
@@ -13,7 +22,7 @@ public def jsonHasNonemptyValue (json : Json) (key : String) : Bool :=
   | _ => false
 
 /-- read and parse the `lake-manifest.json` file -/
-public def readLakeManifestFile (manifestPath : System.FilePath) : IO Lean.Json := do
+public def readLakeManifestFile (manifestPath : FilePath) : IO Lean.Json := do
   let raw ← IO.FS.readFile manifestPath
   match Json.parse raw with
   | .ok json => pure json
@@ -46,17 +55,34 @@ public def getLakeManifestDependencyNames (json : Json) : Except String (Array S
   if HashSet.ofArray packages != HashSet.ofArray #["mdgen", "Cli"] then
     throw <| IO.userError s!"Expected package names `mdgen` and `Cli`, got {packages}"
 
-def getLakePackageDir : IO String := do
-  match (← IO.getEnv "LAKE_PACKAGE_DIRECTORY") with
-  | .some path => pure path
-  | .none =>
-    -- for local testing
-    pure "."
+-- test for resolving a relative input path from the GitHub workspace
+#guard
+  let workspace : FilePath := "/tmp/workspace"
+  let packageDir : FilePath := "."
+  let resolved := resolveLakePackageDir (.some workspace) packageDir
+  resolved == workspace / packageDir
+
+-- test for preserving an absolute input path
+#guard
+  let workspace : FilePath := "/tmp/workspace"
+  let packageDir : FilePath := "/tmp/other"
+  let resolved := resolveLakePackageDir (.some workspace) packageDir
+  resolved == packageDir
+
+def getLakePackageDir : IO FilePath := do
+  let packageDir : FilePath ←
+    match (← IO.getEnv "LAKE_PACKAGE_DIRECTORY") with
+    | .some path => pure path
+    | .none =>
+      -- for local testing
+      pure "."
+  let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
+  pure <| resolveLakePackageDir workspace? packageDir
 
 /-- executable entry point for the dependency checker -/
 public def main : IO Unit := do
   let lakePackageDir ← getLakePackageDir
-  let manifestFilePath := s!"{lakePackageDir}/lake-manifest.json"
+  let manifestFilePath := lakePackageDir / "lake-manifest.json"
   let json ← readLakeManifestFile manifestFilePath
   let packageNames ← IO.ofExcept <| getLakeManifestDependencyNames json
   let hasDep : Bool := !packageNames.isEmpty
