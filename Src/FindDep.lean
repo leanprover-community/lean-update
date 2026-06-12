@@ -3,7 +3,7 @@ module
 public import Lean
 import Src.GH
 
-open Lean
+open Lean Std
 
 /-- detect if a JSON object has a nonempty array or object at the given key -/
 public def jsonHasNonemptyValue (json : Json) (key : String) : Bool :=
@@ -38,6 +38,13 @@ public def getLakeManifestDependencyNames (json : Json) : Except String (Array S
   let packages ← IO.ofExcept <| getLakeManifestDependencyNames json
   if packages != #["plausible"] then
     throw <| IO.userError s!"Expected package name `plausible`, got {packages}"
+
+-- test for `test/TwoDeps`, which has two dependencies on `mdgen` and `Cli`
+#eval show IO Unit from do
+  let json ← readLakeManifestFile "test/TwoDeps/lake-manifest.json"
+  let packages ← IO.ofExcept <| getLakeManifestDependencyNames json
+  if HashSet.ofArray packages != HashSet.ofArray #["mdgen", "Cli"] then
+    throw <| IO.userError s!"Expected package names `mdgen` and `Cli`, got {packages}"
 
 def getLakePackageDir : IO String := do
   match (← IO.getEnv "LAKE_PACKAGE_DIRECTORY") with

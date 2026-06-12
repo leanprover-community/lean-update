@@ -1,0 +1,15 @@
+name = "TwoDeps"
+version = "0.1.0"
+defaultTargets = ["twodeps"]
+
+[[require]]
+name = "mdgen"
+scope = "Seasawher"
+rev = "main"
+
+[[lean_lib]]
+name = "TwoDeps"
+
+[[lean_exe]]
+name = "twodeps"
+root = "Main"
