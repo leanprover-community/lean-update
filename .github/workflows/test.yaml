@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  plain_test:
+  plain_e2e_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
         if: steps.update.outputs.result != 'update-success'
         run: exit 1
 
-  fail_test:
+  fail_e2e_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -42,6 +42,23 @@ jobs:
 
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'
+        run: exit 1
+
+  hasDep_e2e_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "silent"
+          lake_package_directory: "./test/HasDep"
+
+      - name: This repository should have dependencies
+        if: steps.update.outputs.result != 'has-dependency'
         run: exit 1
 
   output_test:
