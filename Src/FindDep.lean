@@ -19,6 +19,26 @@ public def readLakeManifestFile (manifestPath : System.FilePath) : IO Lean.Json 
   | .ok json => pure json
   | .error err => throw <| IO.userError s!"Failed to parse JSON: {err}"
 
+/-- extract dependency package names from a parsed `lake-manifest.json` -/
+public def getLakeManifestDependencyNames (json : Json) : Except String (Array String) := do
+  let packagesJson ← json.getObjVal? "packages"
+  let packages ←
+    match packagesJson with
+    | .arr packages => pure packages
+    | _ => throw "`packages` must be an array"
+  packages.mapM fun packageJson => do
+    match packageJson.getObjVal? "name" with
+    | .ok (.str name) => pure name
+    | .ok _ => throw "package `name` must be a string"
+    | .error err => throw s!"package is missing `name`: {err}"
+
+-- test for `test/HasDep`, which has a single dependency on `plausible`
+#eval show IO Unit from do
+  let json ← readLakeManifestFile "test/HasDep/lake-manifest.json"
+  let packages ← IO.ofExcept <| getLakeManifestDependencyNames json
+  if packages != #["plausible"] then
+    throw <| IO.userError s!"Expected package name `plausible`, got {packages}"
+
 def getLakePackageDir : IO String := do
   match (← IO.getEnv "LAKE_PACKAGE_DIRECTORY") with
   | .some path => pure path
@@ -30,11 +50,11 @@ def getLakePackageDir : IO String := do
 public def main : IO Unit := do
   let lakePackageDir ← getLakePackageDir
   let manifestFilePath := s!"{lakePackageDir}/lake-manifest.json"
-  let manifestJson ← readLakeManifestFile manifestFilePath
-
-  let hasDep : Bool := jsonHasNonemptyValue manifestJson "packages"
+  let json ← readLakeManifestFile manifestFilePath
+  let packageNames ← IO.ofExcept <| getLakeManifestDependencyNames json
+  let hasDep : Bool := !packageNames.isEmpty
   if hasDep then
-    IO.println "The repository has some dependencies."
+    IO.println s!"The repository has some dependencies: {packageNames}"
     GH.writeOutput "outcome" "has-dependency"
   else
     IO.println "The repository has no dependencies."
