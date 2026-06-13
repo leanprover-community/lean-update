@@ -28,6 +28,8 @@ def getOutput (input : String) (stdIn : Option String := none) : IO Output := do
   let out ← IO.Process.output
     (args := {cmd := cmd, args := args})
     (input? := stdIn)
+  if out.exitCode != 0 then
+    throw <| IO.userError s!"Command '{input}' failed with exit code {out.exitCode} and error: {out.stderr.trimAscii}"
   return out
 
 def runCmd (input : String) : IO Unit := do
