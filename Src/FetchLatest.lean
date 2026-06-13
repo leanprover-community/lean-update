@@ -120,11 +120,12 @@ def parseLeanTagVersion (s : String) : Except String StdVer :=
   StdVer.parse (if s.startsWith "v" then (s.drop 1).copy else s)
 
 -- test for `parseLeanTagVersion`
-#eval show IO Unit from do
-  let verRc ← IO.ofExcept <| parseLeanTagVersion "v4.31.0-rc2"
-  let verStable ← IO.ofExcept <| parseLeanTagVersion "4.31.0"
-  if verRc > verStable then
-    throw <| IO.userError s!"Unexpected version order: {verRc} should not be newer than {verStable}"
+#guard
+  let result : Except String Bool := do
+    let verRc ← parseLeanTagVersion "v4.31.0-rc2"
+    let verStable ← parseLeanTagVersion "4.31.0"
+    return verRc < verStable
+  result.isOk
 
 def LeanRelease.toTagged (leanRelease : LeanRelease) : Except String LeanTaggedRelease := do
   match leanRelease.kind with
