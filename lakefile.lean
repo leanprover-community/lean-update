@@ -19,9 +19,6 @@ lean_exe fetchLatest where
   root := `Src.FetchLatest
 
 
-lean_exe fetchLatestLeanTest where
-  root := `Src.FetchLatest.Test
-
 open IO Process
 
 def getOutput (input : String) (stdIn : Option String := none) : IO Output := do
@@ -39,7 +36,14 @@ def runCmd (input : String) : IO Unit := do
   if outStr != "" then
     IO.println outStr
 
+lean_exe fetchLatestLeanTest where
+  root := `Src.FetchLatest.Test
+
+lean_exe findDepTest where
+  root := `Src.FindDep.Test
+
 @[test_driver]
 script test do
   runCmd "lake exe fetchLatestLeanTest"
+  runCmd "lake exe findDepTest"
   return 0
