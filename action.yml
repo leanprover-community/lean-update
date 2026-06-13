@@ -111,6 +111,7 @@ outputs:
     description: |
       The latest Lean release version, including both stable and pre-release versions.
       This value could be also nightly.
+      Note: This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
     value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
   notify:
     description: |
