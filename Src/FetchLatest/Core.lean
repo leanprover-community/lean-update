@@ -81,7 +81,7 @@ public def fetchAllLeanReleaseJson (kind : ReleaseKind) : IO Json := do
     }
     let outStr := out.stdout.trimAscii.copy
     if out.exitCode != 0 then
-      throw <| IO.userError s!"Failed to fetch release info from {fetchUrl}: {outStr}"
+      throw <| IO.userError s!"Failed to fetch release info from {fetchUrl}: \n{out.stderr}"
     let json ← IO.ofExcept <| Json.parse outStr
     let nightlyJson ← IO.ofExcept <| json.getObjVal? "nightly"
     let simpleJson ← IO.ofExcept <| dropRedundantField nightlyJson
@@ -93,7 +93,7 @@ public def fetchAllLeanReleaseJson (kind : ReleaseKind) : IO Json := do
     }
     let outStr := out.stdout.trimAscii.copy
     if out.exitCode != 0 then
-      throw <| IO.userError s!"Failed to fetch release info from GitHub: {outStr}"
+      throw <| IO.userError s!"Failed to fetch release info from GitHub: \n{out.stderr}"
     let json ← IO.ofExcept <| Json.parse outStr
     return json
 
