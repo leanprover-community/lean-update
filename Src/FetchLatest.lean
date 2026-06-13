@@ -131,7 +131,7 @@ public def getLatestLeanRelease (kind : ReleaseKind) (now? : Option ZonedDateTim
     | .tagged =>
       let taggedReleases ← filteredReleases
         |>.map LeanRelease.toTagged
-        |>.mapM (IO.ofExcept ·)
+        |>.mapM IO.ofExcept
       let sortedTaggedReleases := taggedReleases.qsort (fun r1 r2 => r1.name > r2.name)
       if h2 : sortedTaggedReleases.size = 0 then
         throw <| IO.userError s!"No valid tagged Lean release found"
