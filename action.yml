@@ -8,7 +8,7 @@ inputs:
   # ----------------------------- #
   lake_package_directory:
     description: |
-      The directory containing the Lake package to build.
+      The directory containing the Lake package to update.
       This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
     required: false
     default: "."
