@@ -27,7 +27,7 @@ jobs:
         if: steps.update.outputs.result != 'update-success'
         run: exit 1
 
-  success_nightly_teset:
+  success_nightly_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -44,6 +44,21 @@ jobs:
       - name: This update should succeed
         if: steps.update.outputs.result != 'update-success'
         run: exit 1
+
+      - name: The latest Lean release should be nightly
+        run: |
+          echo "Latest Lean version: ${{ steps.update.outputs.latest_lean }}"
+          if [[ ! "${{ steps.update.outputs.latest_lean }}" =~ ^nightly- ]]; then
+            echo "Error: The latest_lean output should start with 'nightly-'"
+            exit 1
+          fi
+
+          TOOLCHAIN=$(cat test/SmokeSuccess/lean-toolchain)
+          echo "Updated lean-toolchain: $TOOLCHAIN"
+          if [[ ! "$TOOLCHAIN" =~ ^leanprover/lean4:nightly- ]]; then
+            echo "Error: lean-toolchain should be updated to a nightly Lean release"
+            exit 1
+          fi
 
   fail_e2e_test:
     runs-on: ubuntu-latest
