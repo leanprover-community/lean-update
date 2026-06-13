@@ -114,7 +114,7 @@ outputs:
 
       ## Note
       * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
-      * This value is only set when `update_lean_toolchain` option is set to `auto`
+      * This value is only set when `update_lean_toolchain` option is set to `auto` and the lake package has no dependencies.
     value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
   notify:
     description: |
