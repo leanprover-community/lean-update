@@ -142,6 +142,7 @@ runs:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: fetch the latest Lean release
+      if: ${{ inputs.update_lean_toolchain == 'auto' }}
       id: fetch-latest-lean
       run: |
         : Fetch the latest Lean release
