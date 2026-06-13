@@ -17,3 +17,29 @@ lean_exe findDependencies where
 
 lean_exe fetchLatest where
   root := `Src.FetchLatest
+
+
+lean_exe fetchLatestLeanTest where
+  root := `Src.FetchLatest.Test
+
+open IO Process
+
+def getOutput (input : String) (stdIn : Option String := none) : IO Output := do
+  let cmdList := input.splitOn " "
+  let cmd := cmdList.head!
+  let args := cmdList.tail |>.toArray
+  let out ← IO.Process.output
+    (args := {cmd := cmd, args := args})
+    (input? := stdIn)
+  return out
+
+def runCmd (input : String) : IO Unit := do
+  let out ← getOutput input
+  let outStr := out.stdout.trimAscii
+  if outStr != "" then
+    IO.println outStr
+
+@[test_driver]
+script test do
+  runCmd "lake exe fetchLatestLeanTest"
+  return 0

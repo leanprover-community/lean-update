@@ -27,6 +27,20 @@ public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : Fi
   else
     packageDir
 
+-- test for resolving a relative input path from the GitHub workspace
+#guard
+  let workspace : FilePath := "/tmp/workspace"
+  let packageDir : FilePath := "."
+  let resolved := resolveLakePackageDir (.some workspace) packageDir
+  resolved == workspace / packageDir
+
+-- test for preserving an absolute input path
+#guard
+  let workspace : FilePath := "/tmp/workspace"
+  let packageDir : FilePath := "/tmp/other"
+  let resolved := resolveLakePackageDir (.some workspace) packageDir
+  resolved == packageDir
+
 /-- get the directory of the Lake package to update.
 Note: This github action itself is lake package. -/
 public def getLakePackageDir : IO FilePath := do
