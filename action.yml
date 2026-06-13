@@ -194,6 +194,8 @@ runs:
       with:
         build-args: ${{ inputs.build_args }}
         lake-package-directory: ${{ inputs.lake_package_directory }}
+      env:
+        GH_TOKEN: ${{ github.token }}
 
     # -------------------------------- #
     # record the output of this action #
