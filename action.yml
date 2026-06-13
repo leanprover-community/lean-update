@@ -8,7 +8,7 @@ inputs:
   # ----------------------------- #
   lake_package_directory:
     description: |
-      The directory containing the Lake package to build.
+      The directory containing the Lake package to update.
       This parameter is passed to the lake-package-directory argument of leanprover/lean-action.
     required: false
     default: "."
@@ -20,11 +20,21 @@ inputs:
     description: |
       Controls whether to update the lean-toolchain file for projects with no dependencies.
       Allowed values:
-        * `auto`: Automatically update lean-toolchain to the latest release (default behavior)
+        * `auto`: Automatically update lean-toolchain file to the latest release (default behavior)
         * `never`: Never update the lean-toolchain file
       Default: `auto`
     required: false
     default: "auto"
+
+  release_kind_to_fetch:
+    description: |
+      The kind of the latest Lean release to fetch.
+      This parameter is used only for Lean, not used for fetching other lake dependencies.
+      Allowed values:
+        * `nightly`: fetch the latest nightly release
+        * `tagged`: fetch the latest tagged release (including both stable and pre-releases)
+    required: false
+    default: "tagged"
 
   # ------------------------------------ #
   # run `lake update` and run build/test #
@@ -100,7 +110,12 @@ outputs:
   latest_lean:
     description: |
       The latest Lean release version, including both stable and pre-release versions.
-    value: ${{ steps.record-latest-lean.outputs.latest_lean }}
+      This value could be also nightly.
+
+      ## Note
+      * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
+      * This value is only set when `update_lean_toolchain` option is set to `auto` and the lake package has no dependencies.
+    value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
   notify:
     description: |
       Indicates whether there is an event worth notifying the user about.
@@ -129,13 +144,26 @@ runs:
       env:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
-    - name: Update lean-toolchain
+    - name: fetch the latest Lean release
       if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+      id: fetch-latest-lean
       run: |
-        : Update lean-toolchain
-        node ${{ github.action_path }}/scripts/getLatest.js
+        : Fetch the latest Lean release
+        lake exe fetchLatest
+      shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         GH_TOKEN: ${{ github.token }}
+        RELEASE_KIND_TO_FETCH: ${{ inputs.release_kind_to_fetch }}
+
+    - name: Update lean-toolchain file
+      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+      run: |
+        : Update lean-toolchain file
+        echo "leanprover/lean4:${LATEST_LEAN}" > lean-toolchain
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LATEST_LEAN: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
@@ -170,6 +198,8 @@ runs:
       with:
         build-args: ${{ inputs.build_args }}
         lake-package-directory: ${{ inputs.lake_package_directory }}
+      env:
+        GH_TOKEN: ${{ github.token }}
 
     # -------------------------------- #
     # record the output of this action #
@@ -189,16 +219,6 @@ runs:
           echo "outcome=update-fail" >> $GITHUB_OUTPUT
         fi
       shell: bash
-
-    - name: Record the latest Lean version
-      id: record-latest-lean
-      run: |
-        : Record the latest Lean version
-        LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
-        echo "Latest Lean release is: $LEAN_VERSION"
-        echo "latest_lean=$LEAN_VERSION" >> $GITHUB_OUTPUT
-      shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Record the notify status
       id: record-notify
@@ -233,7 +253,7 @@ runs:
         body: |
           The `lean-toolchain` file has been updated to the following version:
           ```
-          ${{ steps.record-latest-lean.outputs.latest_lean }}
+          ${{ steps.fetch-latest-lean.outputs.latest_lean }}
           ```
         delete-branch: true
         branch: auto-update-lean/patch
