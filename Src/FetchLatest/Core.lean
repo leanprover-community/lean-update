@@ -14,7 +14,7 @@ public inductive ReleaseKind where
   | tagged
   /-- nightly release -/
   | nightly
-deriving Repr
+deriving Repr, BEq, DecidableEq
 
 public instance : ToString ReleaseKind where
   toString
@@ -40,6 +40,9 @@ public structure LeanTaggedRelease where
   name : Lake.StdVer
   createdAt : ZonedDateTime
 deriving Repr
+
+instance : Inhabited LeanTaggedRelease where
+  default := { name := default, createdAt := default }
 
 /-- Convert a Lean release to the toolchain version string. -/
 public protected def LeanRelease.toString (release : LeanRelease) : String :=
@@ -134,6 +137,11 @@ def LeanRelease.toTagged (leanRelease : LeanRelease) : Except String LeanTaggedR
   | .nightly =>
     throw s!"Cannot convert nightly release '{leanRelease.name}' to tagged release"
 
+private def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
+  match leanRelease.toTagged with
+  | .ok tagged => tagged
+  | .error err => panic! s!"Failed to convert LeanRelease '{leanRelease.name}' to tagged release: {err}"
+
 /--
 Get the latest Lean release of the given `kind : ReleaseKind`.
 
@@ -159,3 +167,25 @@ public def getLatestLeanRelease (kind : ReleaseKind) (now? : Option ZonedDateTim
         throw <| IO.userError s!"No valid tagged Lean release found"
       else
         pure sortedTaggedReleases[0].toLeanRelease
+
+def String.toZonedDateTime! (s : String) : ZonedDateTime :=
+  match ZonedDateTime.fromISO8601String s with
+  | .ok zdt => zdt
+  | .error err => panic! s!"Failed to parse '{s}' as ZonedDateTime: {err}"
+
+local instance : Coe String ZonedDateTime where
+  coe s := s.toZonedDateTime!
+
+private def exampleTaggedRelease : Array LeanTaggedRelease :=
+  let releases : Array LeanRelease := #[
+    ⟨.tagged, "v4.28.1", "2026-04-14T12:52:44Z"⟩,
+    ⟨.tagged, "v4.29.1", "2026-04-14T12:40:04Z"⟩,
+    ⟨.tagged, "v4.30.0-rc1", "2026-04-01T05:19:37Z"⟩,
+    ⟨.tagged, "v4.29.0", "2026-03-27T12:45:03Z"⟩,
+    ⟨.tagged, "v4.29.0-rc8", "2026-03-24T11:17:09Z"⟩,
+  ]
+  releases.map LeanRelease.toTagged!
+
+#guard
+  let sorted := exampleTaggedRelease.qsort (fun r1 r2 => r1.name > r2.name)
+  sorted[0]!.name.toString == "4.30.0-rc1"

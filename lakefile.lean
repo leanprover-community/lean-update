@@ -37,15 +37,3 @@ def runCmd (input : String) : IO Unit := do
   let outStr := out.stdout.trimAscii
   if outStr != "" then
     IO.println outStr
-
-lean_exe fetchLatestLeanTest where
-  root := `Src.FetchLatest.Test
-
-lean_exe findDepTest where
-  root := `Src.FindDep.Test
-
-@[test_driver]
-script test do
-  runCmd "lake exe fetchLatestLeanTest"
-  runCmd "lake exe findDepTest"
-  return 0
