@@ -61,7 +61,7 @@ def LeanTaggedRelease.toLeanRelease (tagged : LeanTaggedRelease) : LeanRelease :
   let release : LeanRelease := { kind := .tagged, name := "4.31.0-rc2", createdAt := default }
   release.toString == "v4.31.0-rc2"
 
-def dropRedundantField (json : Json) : Except String Json := do
+def normalizeNightlyJson (json : Json) : Except String Json := do
   let arr ← json.getArr?
   let arr' ← arr.mapM fun item => do
     let name ← item.getObjValAs? String "name"
@@ -87,12 +87,12 @@ public def fetchAllLeanReleaseJson (kind : ReleaseKind) : IO Json := do
       throw <| IO.userError s!"Failed to fetch release info from {fetchUrl}: \n{out.stderr}"
     let json ← IO.ofExcept <| Json.parse outStr
     let nightlyJson ← IO.ofExcept <| json.getObjVal? "nightly"
-    let simpleJson ← IO.ofExcept <| dropRedundantField nightlyJson
+    let simpleJson ← IO.ofExcept <| normalizeNightlyJson nightlyJson
     return simpleJson
   | .tagged =>
     let out ← IO.Process.output {
       cmd := "gh",
-      args := #["release", "list", "--repo", "leanprover/lean4", "--limit", "1000", "--json", "name,createdAt"],
+      args := #["release", "list", "--repo", "leanprover/lean4", "--limit", "50", "--json", "name,createdAt"],
     }
     let outStr := out.stdout.trimAscii.copy
     if out.exitCode != 0 then
