@@ -12,6 +12,8 @@ lean_lib «Src» where
     ⟨`linter.missingDocs, true⟩
   ]
 
-@[default_target]
 lean_exe findDependencies where
   root := `Src.FindDep
+
+lean_exe fetchLatest where
+  root := `Src.FetchLatest

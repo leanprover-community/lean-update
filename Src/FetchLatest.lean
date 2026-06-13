@@ -5,6 +5,8 @@ import Std.Time.Format
 public import Std.Time.Zoned
 public import Lake.Util.Version
 public meta import Lake.Util.Version
+import Src.Env
+import Src.GH
 
 open IO Process Lean Std Time
 
@@ -21,6 +23,13 @@ instance : ToString ReleaseKind where
     | .tagged => "tagged"
     | .nightly => "nightly"
 
+/-- parse a string into a `ReleaseKind` -/
+public def ReleaseKind.ofString (s : String) : Except String ReleaseKind :=
+  match s.toLower with
+  | "tagged" => .ok .tagged
+  | "nightly" => .ok .nightly
+  | _ => throw s!"Invalid release kind: '{s}'. Allowed values are 'tagged' and 'nightly'."
+
 /-- Lean release including nightly -/
 public structure LeanRelease where
   kind : ReleaseKind
@@ -34,8 +43,21 @@ public structure LeanTaggedRelease where
   createdAt : ZonedDateTime
 deriving Repr
 
+protected def LeanRelease.toString (release : LeanRelease) : String :=
+  match release.kind with
+  | .tagged => "v" ++ release.name
+  | .nightly => release.name
+
 def LeanTaggedRelease.toLeanRelease (tagged : LeanTaggedRelease) : LeanRelease :=
   { kind := .tagged, name := tagged.name.toString, createdAt := tagged.createdAt }
+
+#guard
+  let release : LeanRelease := { kind := .nightly, name := "nightly-2021-02-18", createdAt := default }
+  release.toString == "nightly-2021-02-18"
+
+#guard
+  let release : LeanRelease := { kind := .tagged, name := "4.31.0-rc2", createdAt := default }
+  release.toString == "v4.31.0-rc2"
 
 def dropRedundantField (json : Json) : Except String Json := do
   let arr ← json.getArr?
@@ -152,5 +174,14 @@ private def testForGetLatestLeanRelease (kind : ReleaseKind) (now expected : Str
 
 #eval testForGetLatestLeanRelease .tagged "2025-12-07T00:00:00Z" "4.26.0-rc2"
 
-public def main : IO Unit := do
-  sorry
+/-- main entry point for the `fetchLatest` executable.
+Release kind is taken from the environment variable `RELEASE_KIND_TO_FETCH`.
+But it would be overridden if a command-line argument is provided. -/
+public def main (args : List String) : IO Unit := do
+  let kindStr ← if args.length == 1 then pure args.head! else getReleaseKindToFetch
+  IO.println s!"Fetching the latest {kindStr} Lean release..."
+
+  let releaseKind ← IO.ofExcept <| ReleaseKind.ofString kindStr
+  let latestRelease ← getLatestLeanRelease releaseKind
+  IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
+  GH.writeOutput "latest_lean" latestRelease.toString

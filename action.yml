@@ -20,11 +20,21 @@ inputs:
     description: |
       Controls whether to update the lean-toolchain file for projects with no dependencies.
       Allowed values:
-        * `auto`: Automatically update lean-toolchain to the latest release (default behavior)
+        * `auto`: Automatically update lean-toolchain file to the latest release (default behavior)
         * `never`: Never update the lean-toolchain file
       Default: `auto`
     required: false
     default: "auto"
+
+  release_kind_to_fetch:
+    description: |
+      The kind of the latest Lean release to fetch.
+      This parameter is used only for Lean, not used for fetching other lake dependencies.
+      Allowed values:
+        * `nightly`: fetch the latest nightly release
+        * `tagged`: fetch the latest tagged release (including both stable and pre-releases)
+    required: false
+    default: "tagged"
 
   # ------------------------------------ #
   # run `lake update` and run build/test #
@@ -100,7 +110,8 @@ outputs:
   latest_lean:
     description: |
       The latest Lean release version, including both stable and pre-release versions.
-    value: ${{ steps.record-latest-lean.outputs.latest_lean }}
+      This value could be also nightly.
+    value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
   notify:
     description: |
       Indicates whether there is an event worth notifying the user about.
@@ -129,13 +140,25 @@ runs:
       env:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
-    - name: Update lean-toolchain
-      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+    - name: fetch the latest Lean release
+      id: fetch-latest-lean
       run: |
-        : Update lean-toolchain
-        node ${{ github.action_path }}/scripts/getLatest.js
+        : Fetch the latest Lean release
+        lake exe fetchLatest
+      shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         GH_TOKEN: ${{ github.token }}
+        RELEASE_KIND_TO_FETCH: ${{ inputs.release_kind_to_fetch }}
+
+    - name: Update lean-toolchain file
+      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+      run: |
+        : Update lean-toolchain file
+        echo "leanprover/lean4:${LATEST_LEAN}" > lean-toolchain
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LATEST_LEAN: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
@@ -189,16 +212,6 @@ runs:
           echo "outcome=update-fail" >> $GITHUB_OUTPUT
         fi
       shell: bash
-
-    - name: Record the latest Lean version
-      id: record-latest-lean
-      run: |
-        : Record the latest Lean version
-        LEAN_VERSION=$(cat lean-toolchain | sed 's/leanprover\/lean4://')
-        echo "Latest Lean release is: $LEAN_VERSION"
-        echo "latest_lean=$LEAN_VERSION" >> $GITHUB_OUTPUT
-      shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Record the notify status
       id: record-notify
