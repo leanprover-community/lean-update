@@ -124,7 +124,7 @@ def parseLeanTagVersion (s : String) : Except String StdVer :=
     let verRc ← parseLeanTagVersion "v4.31.0-rc2"
     let verStable ← parseLeanTagVersion "4.31.0"
     return verRc < verStable
-  result.isOk
+  result.toOption.getD false
 
 def LeanRelease.toTagged (leanRelease : LeanRelease) : Except String LeanTaggedRelease := do
   match leanRelease.kind with
