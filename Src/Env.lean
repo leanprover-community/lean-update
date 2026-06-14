@@ -10,14 +10,6 @@ public def IO.getEnv! (key : String) : IO String := do
   | .some value => pure value
   | .none => throw <| IO.userError s!"Environment variable '{key}' not found"
 
-/-- Term syntax for reading a required environment variable. -/
-syntax "ENV[" str "]" : term
-
-/-- Expand `ENV["KEY"]` to `IO.getEnv! "KEY"`. -/
-macro_rules
-  | `(ENV[$key:str]) => `(IO.getEnv! $key)
-
-
 /-- resolve a Lake package directory relative to the GitHub workspace when available -/
 public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : FilePath) : FilePath :=
   if packageDir.isRelative then

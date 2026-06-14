@@ -18,7 +18,7 @@ def isRunningGHAction : IO Bool := do
 /-- write a key-value pair to the GitHub Actions output -/
 public def GH.writeOutput (key value : String) : IO Unit := do
   if (← isRunningGHAction) then
-    let path ← ENV["GITHUB_OUTPUT"]
+    let path ← IO.getEnv! "GITHUB_OUTPUT"
     IO.FS.withFile path IO.FS.Mode.append fun h => do
       h.putStr s!"{key}={value}\n"
   else
