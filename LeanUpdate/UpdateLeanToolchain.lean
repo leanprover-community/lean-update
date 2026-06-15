@@ -1,36 +1,19 @@
 module
 
-public import Lean
+import LeanUpdate.Env
+import LeanUpdate.GH
+public meta import LeanUpdate.Input
+public import LeanUpdate.Input
 import Std.Time.Format
-public import Std.Time.Zoned
-public import Lake.Util.Version
 public meta import Lake.Util.Version
+public import Lake.Util.Version
+public import Std.Time.Zoned.ZonedDateTime
 
 open IO Process Lean Std Time
 
-/-- kind of Lean release -/
-public inductive ReleaseKind where
-  /-- tagged release, such as `v4.30.0` or `v4.31.0-rc2` -/
-  | tagged
-  /-- nightly release -/
-  | nightly
-deriving Repr, BEq, DecidableEq
-
-public instance : ToString ReleaseKind where
-  toString
-    | .tagged => "tagged"
-    | .nightly => "nightly"
-
-/-- parse a string into a `ReleaseKind` -/
-public def ReleaseKind.ofString (s : String) : Except String ReleaseKind :=
-  match s.toLower with
-  | "tagged" => .ok .tagged
-  | "nightly" => .ok .nightly
-  | _ => throw s!"Invalid release kind: '{s}'. Allowed values are 'tagged' and 'nightly'."
-
 /-- Lean release including nightly -/
 public structure LeanRelease where
-  kind : ReleaseKind
+  kind : ReleaseKindToFetch
   name : String
   createdAt : ZonedDateTime
 deriving Repr
@@ -74,7 +57,7 @@ def normalizeNightlyJson (json : Json) : Except String Json := do
 
 /-- get all Lean releases as JSON.
 `kind` specifies the type of release to fetch -/
-public def fetchAllLeanReleaseJson (kind : ReleaseKind) : IO Json := do
+public def fetchAllLeanReleaseJson (kind : ReleaseKindToFetch) : IO Json := do
   match kind with
   | .nightly =>
     let fetchUrl := "https://release.lean-lang.org/"
@@ -137,18 +120,18 @@ def LeanRelease.toTagged (leanRelease : LeanRelease) : Except String LeanTaggedR
   | .nightly =>
     throw s!"Cannot convert nightly release '{leanRelease.name}' to tagged release"
 
-private def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
+def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
   match leanRelease.toTagged with
   | .ok tagged => tagged
   | .error err => panic! s!"Failed to convert LeanRelease '{leanRelease.name}' to tagged release: {err}"
 
 /--
-Get the latest Lean release of the given `kind : ReleaseKind`.
+Get the latest Lean release of the given `kind : ReleaseKindToFetch`.
 
 Argument `now` is used for test purposes.
 This function return the latest release which is not newer than `now` if `now` is given.
 -/
-public def getLatestLeanRelease (kind : ReleaseKind) (now? : Option ZonedDateTime := none) : IO LeanRelease := do
+public def getLatestLeanRelease (kind : ReleaseKindToFetch) (now? : Option ZonedDateTime := none) : IO LeanRelease := do
   let json ← fetchAllLeanReleaseJson kind
   let releases ← IO.ofExcept <| parseLeanReleaseJson json
   let filteredReleases := filterLeanReleaseByTime releases now?
@@ -176,7 +159,7 @@ def String.toZonedDateTime! (s : String) : ZonedDateTime :=
 local instance : Coe String ZonedDateTime where
   coe s := s.toZonedDateTime!
 
-private def exampleTaggedRelease : Array LeanTaggedRelease :=
+def exampleTaggedRelease : Array LeanTaggedRelease :=
   let releases : Array LeanRelease := #[
     ⟨.tagged, "v4.28.1", "2026-04-14T12:52:44Z"⟩,
     ⟨.tagged, "v4.29.1", "2026-04-14T12:40:04Z"⟩,
@@ -189,3 +172,33 @@ private def exampleTaggedRelease : Array LeanTaggedRelease :=
 #guard
   let sorted := exampleTaggedRelease.qsort (fun r1 r2 => r1.name > r2.name)
   sorted[0]!.name.toString == "4.30.0-rc1"
+
+/-- Run the `updateLeanToolchain` command.
+
+* This command get the latest Lean release from internet.
+  Note that `lake update` command also modifies the `lean-toolchain` file.
+  So the resulting `lean-toolchain` file may not be the same as the latest release fetched by this command.
+* The command read `UPDATE_LEAN_TOOLCHAIN`.
+  If it is set to `never`, this command does nothing. -/
+public def runUpdateLeanToolchain : IO Unit := do
+  let updateLeanToolchain ← Input.get UpdateLeanToolchain
+  match updateLeanToolchain with
+  | .auto =>
+    IO.println "The input `update_lean_toolchain` is set to auto."
+
+    let releaseKind ← Input.get ReleaseKindToFetch
+    IO.println s!"Fetching the latest {releaseKind} Lean release..."
+
+    let latestRelease ← getLatestLeanRelease releaseKind
+    IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
+    GH.writeOutput "latest_lean" latestRelease.toString
+
+    let targetLakePackageDir ← getTargetLakePackageDirectory
+    let leanToolchainFile := targetLakePackageDir / "lean-toolchain"
+
+    IO.FS.writeFile leanToolchainFile s!"leanprover/lean4:{latestRelease.toString}\n"
+    IO.println s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
+  | .never =>
+    IO.println "The input `update_lean_toolchain` is set to never."
+    IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
+    IO.println "Skipping setting the output `latest_lean`."
