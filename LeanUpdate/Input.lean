@@ -84,11 +84,11 @@ public instance : ActionInput LegacyUpdate where
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
 
-/-- The input that controls which modified files should trigger updates. -/
+/-- The input that controls when to trigger updates based on modified files. -/
 public inductive UpdateIfModified where
-  /-- Trigger successful update handling only when `lean-toolchain` changed. -/
+  /-- watch `lean-toolchain` file -/
   | «lean-toolchain»
-  /-- Trigger successful update handling when either candidate file changed. -/
+  /-- watch `lake-manifest.json` file -/
   | «lake-manifest.json»
 deriving Repr, BEq, ToString, HasParser
 
