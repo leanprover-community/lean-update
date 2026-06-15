@@ -1,22 +1,22 @@
 import Lake
 open Lake DSL
 
-package "Src" where
+package "LeanUpdate" where
   version := v!"0.1.0"
 
 @[default_target]
-lean_lib «Src» where
+lean_lib «LeanUpdate» where
   -- add library configuration options here
-  globs := #[.submodules `Src]
+  globs := #[.submodules `LeanUpdate]
   leanOptions := #[
     ⟨`linter.missingDocs, true⟩
   ]
 
 lean_exe findDependencies where
-  root := `Src.FindDep
+  root := `LeanUpdate.FindDep
 
 lean_exe fetchLatest where
-  root := `Src.FetchLatest
+  root := `LeanUpdate.FetchLatest
 
 
 open IO Process

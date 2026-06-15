@@ -1,8 +1,8 @@
 module
 
 public import Lean
-import Src.GH
-import Src.FindDep.Core
+import LeanUpdate.GH
+import LeanUpdate.FindDep.Core
 
 open Lean Std System
 

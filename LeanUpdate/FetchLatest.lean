@@ -1,8 +1,8 @@
 module
 
-import Src.Env
-import Src.FetchLatest.Core
-import Src.GH
+import LeanUpdate.Env
+import LeanUpdate.FetchLatest.Core
+import LeanUpdate.GH
 
 /-- main entry point for the `fetchLatest` executable.
 Release kind is taken from the environment variable `RELEASE_KIND_TO_FETCH`.

@@ -1,7 +1,7 @@
 module
 
 public import Lean
-import Src.GH
+import LeanUpdate.GH
 
 open Lean Std System
 
