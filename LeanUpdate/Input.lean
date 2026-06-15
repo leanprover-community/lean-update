@@ -17,12 +17,7 @@ deriving Repr, BEq, ToString, HasParser
 #guard toString ReleaseKindToFetch.nightly == "nightly"
 
 #guard
-  match ReleaseKindToFetch.parse "TAGGED" with
-  | .ok .tagged => true
-  | _ => false
-
-#guard
-  match (parseAs ReleaseKindToFetch "nightly" : Except String ReleaseKindToFetch) with
+  match (parseAs ReleaseKindToFetch "nightly") with
   | .ok .nightly => true
   | _ => false
 
@@ -51,5 +46,5 @@ public def Input.get (α : Type) [ActionInput α] : IO α := do
 
 public instance : ActionInput ReleaseKindToFetch where
   envName := "RELEASE_KIND_TO_FETCH"
-  parse := ReleaseKindToFetch.parse
+  parse := parseAs ReleaseKindToFetch
   localValue? := some .tagged
