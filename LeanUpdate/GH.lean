@@ -1,6 +1,7 @@
 module
 
 import LeanUpdate.Env
+import LeanUpdate.HasParser
 
 /-
 utils for GitHub Action
@@ -14,10 +15,12 @@ def Local.GITHUB_ENV : String := "tmp/env.txt"
 
 /-- detect if the code is running in a GitHub Action environment -/
 public def GH.isRunningGHAction : IO Bool := do
-  let isAction? ← IO.getEnv "GITHUB_ACTIONS"
-  match isAction?.map String.toLower with
-  | .some "true" => pure true
-  | _ => pure false
+  let isActionStr? ← IO.getEnv "GITHUB_ACTIONS"
+  match isActionStr? with
+  | .some isActionStr =>
+    let isAction ← IO.ofExcept <| Bool.parse isActionStr
+    pure isAction
+  | .none => pure false
 
 def IO.FS.appendLineToFile (path : System.FilePath) (line : String) : IO Unit :=
   IO.FS.withFile path IO.FS.Mode.append fun h => do

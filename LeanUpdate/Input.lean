@@ -1,6 +1,8 @@
 module
 
 public meta import LeanUpdate.Deriving.ToString
+public meta import LeanUpdate.Deriving.HasParser
+public import LeanUpdate.HasParser
 
 /-- The kind of Lean release -/
 public inductive ReleaseKindToFetch where
@@ -8,17 +10,20 @@ public inductive ReleaseKindToFetch where
   | tagged
   /-- nightly release -/
   | nightly
-deriving Repr, BEq, ToString
+deriving Repr, BEq, ToString, HasParser
 
 #guard toString ReleaseKindToFetch.tagged == "tagged"
 #guard toString ReleaseKindToFetch.nightly == "nightly"
 
-/-- parse a string into a `ReleaseKindToFetch` -/
-public def ReleaseKindToFetch.parse (s : String) : Except String ReleaseKindToFetch :=
-  match s.toLower with
-  | "tagged" => .ok .tagged
-  | "nightly" => .ok .nightly
-  | _ => throw s!"Invalid release kind: '{s}'. Allowed values are 'tagged' and 'nightly'."
+#guard
+  match ReleaseKindToFetch.parse "TAGGED" with
+  | .ok .tagged => true
+  | _ => false
+
+#guard
+  match (HasParser.parse ReleaseKindToFetch "nightly" : Except String ReleaseKindToFetch) with
+  | .ok .nightly => true
+  | _ => false
 
 /-- get the release kind to fetch from the environment variable `RELEASE_KIND_TO_FETCH`. -/
 public def getReleaseKindToFetch : IO ReleaseKindToFetch := do
