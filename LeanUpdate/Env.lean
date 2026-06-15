@@ -44,8 +44,4 @@ public def getLakePackageDir : IO FilePath := do
   let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
   pure <| resolveLakePackageDir workspace? packageDir
 
-/-- get the release kind to fetch from the environment variable `RELEASE_KIND_TO_FETCH`. -/
-public def getReleaseKindToFetch : IO String := do
-  match (← IO.getEnv "RELEASE_KIND_TO_FETCH") with
-  | .some kindStr => pure kindStr
-  | .none => return "tagged" -- default value for local testing
+

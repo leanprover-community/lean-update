@@ -13,10 +13,10 @@ def Local.GITHUB_OUTPUT : String := "tmp/output.txt"
 def Local.GITHUB_ENV : String := "tmp/env.txt"
 
 /-- detect if the code is running in a GitHub Action environment -/
-def isRunningGHAction : IO Bool := do
-  match (← IO.getEnv "GITHUB_ACTIONS") with
+public def GH.isRunningGHAction : IO Bool := do
+  let isAction? ← IO.getEnv "GITHUB_ACTIONS"
+  match isAction?.map String.toLower with
   | .some "true" => pure true
-  | .some "True" => pure true
   | _ => pure false
 
 def IO.FS.appendLineToFile (path : System.FilePath) (line : String) : IO Unit :=
@@ -25,11 +25,11 @@ def IO.FS.appendLineToFile (path : System.FilePath) (line : String) : IO Unit :=
 
 /-- write a key-value pair to the GitHub Actions output -/
 public def GH.writeOutput (key value : String) : IO Unit := do
+  let line := s!"{key}={value}"
   if (← isRunningGHAction) then
     let path ← IO.getEnv! "GITHUB_OUTPUT"
-    IO.FS.appendLineToFile path s!"{key}={value}"
+    IO.FS.appendLineToFile path line
   else
-    let line := s!"{key}={value}"
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
 
 def GH.writeGHEnv (key value : String) : IO Unit := do

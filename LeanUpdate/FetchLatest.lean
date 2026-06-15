@@ -2,6 +2,8 @@ module
 
 import LeanUpdate.Env
 import LeanUpdate.GH
+public meta import LeanUpdate.Input
+public import LeanUpdate.Input
 import Std.Time.Format
 public meta import Lake.Util.Version
 public import Lake.Util.Version
@@ -9,29 +11,9 @@ public import Std.Time.Zoned.ZonedDateTime
 
 open IO Process Lean Std Time
 
-/-- kind of Lean release -/
-public inductive ReleaseKind where
-  /-- tagged release, such as `v4.30.0` or `v4.31.0-rc2` -/
-  | tagged
-  /-- nightly release -/
-  | nightly
-deriving Repr, BEq, DecidableEq
-
-public instance : ToString ReleaseKind where
-  toString
-    | .tagged => "tagged"
-    | .nightly => "nightly"
-
-/-- parse a string into a `ReleaseKind` -/
-public def ReleaseKind.ofString (s : String) : Except String ReleaseKind :=
-  match s.toLower with
-  | "tagged" => .ok .tagged
-  | "nightly" => .ok .nightly
-  | _ => throw s!"Invalid release kind: '{s}'. Allowed values are 'tagged' and 'nightly'."
-
 /-- Lean release including nightly -/
 public structure LeanRelease where
-  kind : ReleaseKind
+  kind : ReleaseKindToFetch
   name : String
   createdAt : ZonedDateTime
 deriving Repr
@@ -75,7 +57,7 @@ def normalizeNightlyJson (json : Json) : Except String Json := do
 
 /-- get all Lean releases as JSON.
 `kind` specifies the type of release to fetch -/
-public def fetchAllLeanReleaseJson (kind : ReleaseKind) : IO Json := do
+public def fetchAllLeanReleaseJson (kind : ReleaseKindToFetch) : IO Json := do
   match kind with
   | .nightly =>
     let fetchUrl := "https://release.lean-lang.org/"
@@ -144,12 +126,12 @@ def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
   | .error err => panic! s!"Failed to convert LeanRelease '{leanRelease.name}' to tagged release: {err}"
 
 /--
-Get the latest Lean release of the given `kind : ReleaseKind`.
+Get the latest Lean release of the given `kind : ReleaseKindToFetch`.
 
 Argument `now` is used for test purposes.
 This function return the latest release which is not newer than `now` if `now` is given.
 -/
-public def getLatestLeanRelease (kind : ReleaseKind) (now? : Option ZonedDateTime := none) : IO LeanRelease := do
+public def getLatestLeanRelease (kind : ReleaseKindToFetch) (now? : Option ZonedDateTime := none) : IO LeanRelease := do
   let json ← fetchAllLeanReleaseJson kind
   let releases ← IO.ofExcept <| parseLeanReleaseJson json
   let filteredReleases := filterLeanReleaseByTime releases now?
@@ -195,10 +177,12 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
 Release kind is taken from the environment variable `RELEASE_KIND_TO_FETCH`.
 But it would be overridden if a command-line argument is provided. -/
 public def runFetchLatest (args : List String) : IO Unit := do
-  let kindStr ← if args.length == 1 then pure args.head! else getReleaseKindToFetch
-  IO.println s!"Fetching the latest {kindStr} Lean release..."
-
-  let releaseKind ← IO.ofExcept <| ReleaseKind.ofString kindStr
+  let releaseKind ←
+    match args with
+    | [] => getReleaseKindToFetch
+    | [kindStr] => IO.ofExcept <| ReleaseKindToFetch.parse kindStr
+    | _ => throw <| IO.userError "fetchLatest expects at most one release kind argument"
+  IO.println s!"Fetching the latest {releaseKind} Lean release..."
   let latestRelease ← getLatestLeanRelease releaseKind
   IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
   GH.writeOutput "latest_lean" latestRelease.toString
