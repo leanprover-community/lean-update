@@ -15,9 +15,6 @@ structure CheckChangesResult where
   changedFiles : String
   leanToolchainUpdated : Bool
 
-def boolOutput (b : Bool) : String :=
-  if b then "true" else "false"
-
 def hasGitDiffIgnoringWhitespace (cwd : FilePath) (path : String) : IO Bool := do
   let out ← IO.Process.output {
     cmd := "git"
@@ -55,9 +52,9 @@ public def runCheckChanges : IO Unit := do
   let targetLakePackageDir ← getTargetLakePackageDirectory
   let result ← checkChanges updateIfModified targetLakePackageDir
 
-  IO.println s!"info: files_changed={boolOutput result.filesChanged}, do_update={boolOutput result.doUpdate}, changed_files={result.changedFiles}, lean_toolchain_updated={boolOutput result.leanToolchainUpdated}"
+  IO.println s!"info: files_changed={result.filesChanged}, do_update={result.doUpdate}, changed_files={result.changedFiles}, lean_toolchain_updated={result.leanToolchainUpdated}"
 
-  GH.writeOutput "files_changed" (boolOutput result.filesChanged)
+  GH.writeOutput "files_changed" (toString result.filesChanged)
   GH.writeOutput "changed_files" result.changedFiles
-  GH.writeOutput "do_update" (boolOutput result.doUpdate)
-  GH.writeOutput "lean_toolchain_updated" (boolOutput result.leanToolchainUpdated)
+  GH.writeOutput "do_update" (toString result.doUpdate)
+  GH.writeOutput "lean_toolchain_updated" (toString result.leanToolchainUpdated)
