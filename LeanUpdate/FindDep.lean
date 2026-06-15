@@ -17,6 +17,8 @@ public def runFindDependencies : IO Unit := do
   if hasDep then
     IO.println s!"The repository has some dependencies: {packageNames}"
     GH.writeOutput "has_dependency" "true"
+    GH.writeGHEnv "HAS_DEPENDENCY" "true"
   else
     IO.println "The repository has no dependencies."
     GH.writeOutput "has_dependency" "false"
+    GH.writeGHEnv "HAS_DEPENDENCY" "false"

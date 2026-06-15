@@ -149,7 +149,7 @@ runs:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: Update lean-toolchain file
-      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' }}
+      if: env.LEAN_UPDATE_HAS_DEPENDENCY == 'false'
       id: update-lean-toolchain
       run: |
         : Update lean-toolchain file
@@ -173,7 +173,6 @@ runs:
         LEGACY_UPDATE: ${{ inputs.legacy_update }}
 
     - name: Check if lean-toolchain or lake-manifest.json were updated
-      id: check-update
       run: |
         lake exe leanUpdate checkChanges
       env:
@@ -183,7 +182,7 @@ runs:
       working-directory: ${{ github.action_path }}
 
     - name: Try to build lean if something was updated
-      if: steps.check-update.outputs.files_changed == 'true'
+      if: env.LEAN_UPDATE_FILES_CHANGED == 'true'
       id: build-lean
       continue-on-error: true
       uses: leanprover/lean-action@v1
@@ -200,7 +199,7 @@ runs:
       id: record-result
       run: |
         : Record the outcome
-        if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
+        if [ "${{ env.LEAN_UPDATE_FILES_CHANGED }}" == "false" ]; then
           echo "No update available"
           echo "outcome=no-update" >> $GITHUB_OUTPUT
         elif [ "${{ steps.build-lean.outcome }}" == "success" ]; then
@@ -216,10 +215,10 @@ runs:
       id: record-notify
       run: |
         : Record the notify status
-        if [ "${{ steps.check-update.outputs.files_changed }}" == "false" ]; then
+        if [ "${{ env.LEAN_UPDATE_FILES_CHANGED }}" == "false" ]; then
           echo "No updates available, no need to notify"
           echo "notify=false" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.build-lean.outcome }}" == "success" ] && [ "${{ steps.check-update.outputs.do_update }}" == "true" ]; then
+        elif [ "${{ steps.build-lean.outcome }}" == "success" ] && [ "${{ env.LEAN_UPDATE_DO_UPDATE }}" == "true" ]; then
           echo "Updates available and build successful - should notify"
           echo "notify=true" >> $GITHUB_OUTPUT
         elif [ "${{ steps.build-lean.outcome }}" == "failure" ]; then
@@ -237,15 +236,15 @@ runs:
     - name: Open PR if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' &&
           inputs.on_update_succeeds == 'pr' &&
-          steps.check-update.outputs.do_update == 'true' &&
-          steps.check-update.outputs.lean_toolchain_updated == 'true'
+          env.LEAN_UPDATE_DO_UPDATE == 'true' &&
+          env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'true'
       uses: peter-evans/create-pull-request@v8
       with:
         title: "Updates available and ready to merge"
         body: |
           The `lean-toolchain` file has been updated to the following version:
           ```
-          ${{ steps.update-lean-toolchain.outputs.latest_lean }}
+          ${{ env.LEAN_UPDATE_LATEST_LEAN }}
           ```
         delete-branch: true
         branch: auto-update-lean/patch
@@ -254,8 +253,8 @@ runs:
     - name: Open PR if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' &&
           inputs.on_update_succeeds == 'pr' &&
-          steps.check-update.outputs.do_update == 'true' &&
-          steps.check-update.outputs.lean_toolchain_updated == 'false'
+          env.LEAN_UPDATE_DO_UPDATE == 'true' &&
+          env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'false'
       uses: peter-evans/create-pull-request@v8
       with:
         title: "Updates available and ready to merge"
@@ -265,7 +264,7 @@ runs:
         labels: "auto-update-lean"
 
     - name: Open issue if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && steps.check-update.outputs.do_update == 'true'
+      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && env.LEAN_UPDATE_DO_UPDATE == 'true'
       run: |
         : Open issue if the updated lean build was successful
         TITLE="Updates available and have been tested to build correctly"
@@ -278,18 +277,18 @@ runs:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
+        CHANGED_FILES: ${{ env.LEAN_UPDATE_CHANGED_FILES }}
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Commit update if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && steps.check-update.outputs.do_update == 'true'
+      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && env.LEAN_UPDATE_DO_UPDATE == 'true'
       uses: EndBug/add-and-commit@v10
       with:
         default_author: github_actions
       env:
         ON_UPDATE_SUCCEEDS: ${{ inputs.on_update_succeeds }}
-        DO_UPDATE: ${{ steps.check-update.outputs.do_update }}
+        DO_UPDATE: ${{ env.LEAN_UPDATE_DO_UPDATE }}
 
     # ----------------- #
     # when update fails #
@@ -307,7 +306,7 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPO: ${{ github.repository }}
-        CHANGED_FILES: ${{ steps.check-update.outputs.changed_files }}
+        CHANGED_FILES: ${{ env.LEAN_UPDATE_CHANGED_FILES }}
       shell: bash
       working-directory: ${{ inputs.lake_package_directory }}
 

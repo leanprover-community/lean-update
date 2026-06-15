@@ -54,7 +54,7 @@ public def runCheckChanges : IO Unit := do
 
   IO.println s!"info: files_changed={result.filesChanged}, do_update={result.doUpdate}, changed_files={result.changedFiles}, lean_toolchain_updated={result.leanToolchainUpdated}"
 
-  GH.writeOutput "files_changed" (toString result.filesChanged)
-  GH.writeOutput "changed_files" result.changedFiles
-  GH.writeOutput "do_update" (toString result.doUpdate)
-  GH.writeOutput "lean_toolchain_updated" (toString result.leanToolchainUpdated)
+  GH.writeGHEnv "FILES_CHANGED" (toString result.filesChanged)
+  GH.writeGHEnv "CHANGED_FILES" result.changedFiles
+  GH.writeGHEnv "DO_UPDATE" (toString result.doUpdate)
+  GH.writeGHEnv "LEAN_TOOLCHAIN_UPDATED" (toString result.leanToolchainUpdated)
