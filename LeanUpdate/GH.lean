@@ -30,15 +30,16 @@ def IO.FS.appendLineToFile (path : System.FilePath) (line : String) : IO Unit :=
 public def GH.writeOutput (key value : String) : IO Unit := do
   let line := s!"{key}={value}"
   if (← isRunningGHAction) then
-    let path ← IO.getEnv! "GITHUB_OUTPUT"
-    IO.FS.appendLineToFile path line
+    let GITHUB_OUTPUT ← IO.getEnv! "GITHUB_OUTPUT"
+    IO.FS.appendLineToFile GITHUB_OUTPUT line
   else
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
+  IO.println s!"[Update GITHUB_OUTPUT]: {key}={value}"
 
 def GH.writeGHEnv (key value : String) : IO Unit := do
   if (← isRunningGHAction) then
-    let path ← IO.getEnv! "GITHUB_ENV"
-    IO.FS.appendLineToFile path s!"LEAN_UPDATE_{key}={value}"
+    let GITHUB_ENV ← IO.getEnv! "GITHUB_ENV"
+    IO.FS.appendLineToFile GITHUB_ENV s!"LEAN_UPDATE_{key}={value}"
   else
     IO.FS.appendLineToFile Local.GITHUB_ENV s!"LEAN_UPDATE_{key}={value}"
 
