@@ -12,7 +12,7 @@ public def jsonHasNonemptyValue (json : Json) (key : String) : Bool :=
   | .ok (.obj obj) => !obj.isEmpty
   | _ => false
 
-private def exampleManifestStr.noDep : String := r#"
+def exampleManifestStr.noDep : String := r#"
   {"version": "1.1.0",
   "packagesDir": ".lake/packages",
   "packages": [],
@@ -46,7 +46,7 @@ public def getLakeManifestDependencyNames (json : Json) : Except String (Array S
     | .ok _ => throw "package `name` must be a string"
     | .error err => throw s!"package is missing `name`: {err}"
 
-private def exampleManifestStr.hasDep : String := r#"
+def exampleManifestStr.hasDep : String := r#"
   {"version": "1.2.0",
   "packagesDir": ".lake/packages",
   "packages":
@@ -78,7 +78,7 @@ private def exampleManifestStr.hasDep : String := r#"
     return packages == #["plausible"]
   result.toOption.getD false
 
-private def exampleManifestStr.twoDeps : String := r#"
+def exampleManifestStr.twoDeps : String := r#"
 {"version": "1.2.0",
  "packagesDir": ".lake/packages",
  "packages":

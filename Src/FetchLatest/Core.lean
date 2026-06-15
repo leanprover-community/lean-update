@@ -137,7 +137,7 @@ def LeanRelease.toTagged (leanRelease : LeanRelease) : Except String LeanTaggedR
   | .nightly =>
     throw s!"Cannot convert nightly release '{leanRelease.name}' to tagged release"
 
-private def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
+def LeanRelease.toTagged! (leanRelease : LeanRelease) : LeanTaggedRelease :=
   match leanRelease.toTagged with
   | .ok tagged => tagged
   | .error err => panic! s!"Failed to convert LeanRelease '{leanRelease.name}' to tagged release: {err}"
@@ -176,7 +176,7 @@ def String.toZonedDateTime! (s : String) : ZonedDateTime :=
 local instance : Coe String ZonedDateTime where
   coe s := s.toZonedDateTime!
 
-private def exampleTaggedRelease : Array LeanTaggedRelease :=
+def exampleTaggedRelease : Array LeanTaggedRelease :=
   let releases : Array LeanRelease := #[
     ⟨.tagged, "v4.28.1", "2026-04-14T12:52:44Z"⟩,
     ⟨.tagged, "v4.29.1", "2026-04-14T12:40:04Z"⟩,
