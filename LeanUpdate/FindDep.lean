@@ -6,11 +6,6 @@ import LeanUpdate.Env
 
 open Lean Lake Std System
 
-/-- extract dependency package names from a parsed `lake-manifest.json` -/
-public def getLakeManifestDependencyNames (manifest : Lake.Manifest) : Array String :=
-  manifest.packages.map fun package =>
-    package.name.toString (escape := false)
-
 /-- Run the dependency checker command. -/
 public def runFindDependencies : IO Unit := do
   let lakePackageDir ← getLakePackageDir
