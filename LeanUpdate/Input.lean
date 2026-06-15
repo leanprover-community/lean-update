@@ -104,8 +104,6 @@ deriving Repr, BEq, ToString, HasParser
     |>.all id
   result
 
-#guard parseAs UpdateIfModified "lake-manifest.json" |>.isOk
-
 public instance : ActionInput UpdateIfModified where
   envName := "UPDATE_IF_MODIFIED"
   parse := parseAs UpdateIfModified
