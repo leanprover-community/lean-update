@@ -175,12 +175,12 @@ runs:
     - name: Check if lean-toolchain or lake-manifest.json were updated
       id: check-update
       run: |
-        : Check if lean-toolchain or lake-manifest.json were updated
-        node ${{ github.action_path }}/scripts/checkChanges.js
+        lake exe leanUpdate checkChanges
       env:
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
         UPDATE_IF_MODIFIED: ${{ inputs.update_if_modified }}
       shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
+      working-directory: ${{ github.action_path }}
 
     - name: Try to build lean if something was updated
       if: steps.check-update.outputs.files_changed == 'true'

@@ -83,3 +83,46 @@ public instance : ActionInput LegacyUpdate where
   envName := "LEGACY_UPDATE"
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
+
+/-- The input that controls which modified files should trigger updates. -/
+public inductive UpdateIfModified where
+  /-- Trigger successful update handling only when `lean-toolchain` changed. -/
+  | leanToolchain
+  /-- Trigger successful update handling when either candidate file changed. -/
+  | lakeManifestJson
+deriving Repr, BEq
+
+namespace UpdateIfModified
+
+/-- Convert the input value to the spelling used by `action.yml`. -/
+public def toInputString : UpdateIfModified → String
+  | .leanToolchain => "lean-toolchain"
+  | .lakeManifestJson => "lake-manifest.json"
+
+/-- The valid `update_if_modified` input values. -/
+public def validValues : List String :=
+  [toInputString .leanToolchain, toInputString .lakeManifestJson]
+
+/-- Parse the `update_if_modified` input value. -/
+public def parse (s : String) : Except String UpdateIfModified :=
+  match s with
+  | "lean-toolchain" => .ok .leanToolchain
+  | "lake-manifest.json" => .ok .lakeManifestJson
+  | _ =>
+    .error s!"Error: {s} is not a valid option for update_if_modified. Valid options are: {String.intercalate ", " validValues}"
+
+#guard (parse "lean-toolchain").toOption == some .leanToolchain
+#guard (parse "lake-manifest.json").toOption == some .lakeManifestJson
+
+end UpdateIfModified
+
+public instance : ToString UpdateIfModified where
+  toString := UpdateIfModified.toInputString
+
+public instance : HasParser UpdateIfModified where
+  parse := UpdateIfModified.parse
+
+public instance : ActionInput UpdateIfModified where
+  envName := "UPDATE_IF_MODIFIED"
+  parse := parseAs UpdateIfModified
+  localValue? := some .lakeManifestJson
