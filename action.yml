@@ -115,7 +115,7 @@ outputs:
       ## Note
       * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
       * This value is only set when `update_lean_toolchain` option is set to `true` and the lake package has no dependencies.
-    value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
+    value: ${{ steps.update-lean-toolchain.outputs.latest_lean }}
   notify:
     description: |
       Indicates whether there is an event worth notifying the user about.
@@ -144,29 +144,19 @@ runs:
       env:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
-    - name: fetch the latest Lean release
+    - name: Update lean-toolchain file
       if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' }}
-      id: fetch-latest-lean
+      id: update-lean-toolchain
       run: |
-        : Fetch the latest Lean release
-        lake exe leanUpdate fetchLatest
+        : Update lean-toolchain file
+        lake exe leanUpdate updateLeanToolchain
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
         GH_TOKEN: ${{ github.token }}
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
         RELEASE_KIND_TO_FETCH: ${{ inputs.release_kind_to_fetch }}
         UPDATE_LEAN_TOOLCHAIN: ${{ inputs.update_lean_toolchain }}
-
-    - name: Update lean-toolchain file
-      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'true' }}
-      run: |
-        : Update lean-toolchain file
-        echo "leanprover/lean4:${LATEST_LEAN}" > lean-toolchain
-      env:
-        GH_TOKEN: ${{ github.token }}
-        LATEST_LEAN: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
-      shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
 
     - name: Update dependencies of ${{ github.repository }}
       run: |
@@ -254,7 +244,7 @@ runs:
         body: |
           The `lean-toolchain` file has been updated to the following version:
           ```
-          ${{ steps.fetch-latest-lean.outputs.latest_lean }}
+          ${{ steps.update-lean-toolchain.outputs.latest_lean }}
           ```
         delete-branch: true
         branch: auto-update-lean/patch

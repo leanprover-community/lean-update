@@ -173,10 +173,14 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
   let sorted := exampleTaggedRelease.qsort (fun r1 r2 => r1.name > r2.name)
   sorted[0]!.name.toString == "4.30.0-rc1"
 
-/-- Run the `fetchLatest` command.
-Release kind is taken from the environment variable `RELEASE_KIND_TO_FETCH`.
-But it would be overridden if a command-line argument is provided. -/
-public def runFetchLatest : IO Unit := do
+/-- Run the `updateLeanToolchain` command.
+
+* This command get the latest Lean release from internet.
+  Note that `lake update` command also modifies the `lean-toolchain` file.
+  So the resulting `lean-toolchain` file may not be the same as the latest release fetched by this command.
+* The command read `UPDATE_LEAN_TOOLCHAIN`.
+  If it is set to `false`, this command does nothing. -/
+public def runUpdateLeanToolchain : IO Unit := do
   let updateLeanToolchain ← Input.get UpdateLeanToolchain
   if updateLeanToolchain then
     IO.println "The input `update_lean_toolchain` is set to true."
@@ -187,6 +191,13 @@ public def runFetchLatest : IO Unit := do
     let latestRelease ← getLatestLeanRelease releaseKind
     IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
     GH.writeOutput "latest_lean" latestRelease.toString
+
+    let resolvedLakePackageDir ← resolveTargetLakePackageDirectory
+    let leanToolchainFile := resolvedLakePackageDir / "lean-toolchain"
+
+    IO.FS.writeFile leanToolchainFile s!"leanprover/lean4:{latestRelease.toString}\n"
+    IO.println s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
   else
     IO.println "The input `update_lean_toolchain` is set to false."
     IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
+    IO.println "Skipping setting the output `latest_lean`."
