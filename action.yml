@@ -138,7 +138,7 @@ runs:
     - name: read lake-manifest.json and find dependencies
       id: find-dependencies
       run: |
-        lake exe findDependencies
+        lake exe leanUpdate findDependencies
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
@@ -149,7 +149,7 @@ runs:
       id: fetch-latest-lean
       run: |
         : Fetch the latest Lean release
-        lake exe fetchLatest
+        lake exe leanUpdate fetchLatest
       shell: bash
       working-directory: ${{ github.action_path }}
       env:

@@ -12,8 +12,5 @@ lean_lib «LeanUpdate» where
     ⟨`linter.missingDocs, true⟩
   ]
 
-lean_exe findDependencies where
-  root := `LeanUpdate.FindDep
-
-lean_exe fetchLatest where
-  root := `LeanUpdate.FetchLatest
+lean_exe leanUpdate where
+  root := `Main

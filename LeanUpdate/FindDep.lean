@@ -6,8 +6,8 @@ import LeanUpdate.FindDep.Core
 
 open Lean Std System
 
-/-- executable entry point for the dependency checker -/
-public def main : IO Unit := do
+/-- Run the dependency checker command. -/
+public def runFindDependencies : IO Unit := do
   let lakePackageDir ← getLakePackageDir
   let manifestFilePath := lakePackageDir / "lake-manifest.json"
   let json ← readLakeManifestFile manifestFilePath
