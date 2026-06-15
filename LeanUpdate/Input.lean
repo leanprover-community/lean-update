@@ -58,7 +58,7 @@ public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : Fi
   resolved == packageDir
 
 /-- resolve the target Lake package directory supplied by the action input. -/
-public def resolveTargetLakePackageDirectory : IO FilePath := do
+public def getTargetLakePackageDirectory : IO FilePath := do
   let packageDir ← Input.get LakePackageDirectory
   let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
   pure <| resolveLakePackageDir workspace? packageDir

@@ -8,8 +8,8 @@ open Lean Lake Std System
 
 /-- Run the dependency checker command. -/
 public def runFindDependencies : IO Unit := do
-  let resolvedLakePackageDir ← resolveTargetLakePackageDirectory
-  let manifestFilePath := resolvedLakePackageDir / "lake-manifest.json"
+  let targetLakePackageDir ← getTargetLakePackageDirectory
+  let manifestFilePath := targetLakePackageDir / "lake-manifest.json"
   let manifest ← Lake.Manifest.load manifestFilePath
   let packageNames := manifest.packages
     |>.map fun package => package.name.toString (escape := false)

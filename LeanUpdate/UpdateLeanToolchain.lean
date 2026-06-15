@@ -192,8 +192,8 @@ public def runUpdateLeanToolchain : IO Unit := do
     IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
     GH.writeOutput "latest_lean" latestRelease.toString
 
-    let resolvedLakePackageDir ← resolveTargetLakePackageDirectory
-    let leanToolchainFile := resolvedLakePackageDir / "lean-toolchain"
+    let targetLakePackageDir ← getTargetLakePackageDirectory
+    let leanToolchainFile := targetLakePackageDir / "lean-toolchain"
 
     IO.FS.writeFile leanToolchainFile s!"leanprover/lean4:{latestRelease.toString}\n"
     IO.println s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
