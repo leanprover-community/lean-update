@@ -7,10 +7,10 @@ utils for GitHub Action
 -/
 
 /-- this is used for local testing -/
-def Local.GITHUB_OUTPUT : String := "output.txt"
+def Local.GITHUB_OUTPUT : String := "tmp/output.txt"
 
 /-- this is used for local testing -/
-def Local.GITHUB_ENV : String := "env.txt"
+def Local.GITHUB_ENV : String := "tmp/env.txt"
 
 /-- detect if the code is running in a GitHub Action environment -/
 def isRunningGHAction : IO Bool := do

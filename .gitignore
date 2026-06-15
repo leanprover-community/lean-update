@@ -1,3 +1,4 @@
 /.lake
-output.txt
+tmp/*
+!tmp/.gitkeep
 RunCanaryTest.lean
