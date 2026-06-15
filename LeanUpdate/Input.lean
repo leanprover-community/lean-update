@@ -93,10 +93,17 @@ public inductive UpdateIfModified where
 deriving Repr, BEq, ToString, HasParser
 
 #guard
-  let str : List UpdateIfModified := [.«lean-toolchain», .«lake-manifest.json»]
-  str.map toString == ["lean-toolchain", "lake-manifest.json"]
+  let lst : List UpdateIfModified := [.«lean-toolchain», .«lake-manifest.json»]
+  lst.map toString == ["lean-toolchain", "lake-manifest.json"]
 
-#guard parseAs UpdateIfModified "lean-toolchain" |>.isOk
+#guard
+  let lst : List String := ["lean-toolchain", "lake-manifest.json"]
+  let result := lst
+    |>.map (parseAs UpdateIfModified ·)
+    |>.map Except.isOk
+    |>.all id
+  result
+
 #guard parseAs UpdateIfModified "lake-manifest.json" |>.isOk
 
 public instance : ActionInput UpdateIfModified where
