@@ -2,11 +2,11 @@ module
 
 /-- A type that can be parsed from a string. -/
 public class HasParser (α : Type) where
-  parseFn : String → Except String α
+  parse : String → Except String α
 
 /-- Parse a string as a value of the given type. -/
-public def HasParser.parse (α : Type) [HasParser α] (s : String) : Except String α :=
-  HasParser.parseFn s
+public def parseAs (α : Type) [HasParser α] (s : String) : Except String α :=
+  HasParser.parse s
 
 /-- parse a string into a `Bool` -/
 public def Bool.parse (s : String) : Except String Bool :=
@@ -16,4 +16,4 @@ public def Bool.parse (s : String) : Except String Bool :=
   | _ => throw s!"Invalid boolean value: '{s}'. Allowed values are 'true' and 'false'."
 
 public instance : HasParser Bool where
-  parseFn := Bool.parse
+  parse := Bool.parse

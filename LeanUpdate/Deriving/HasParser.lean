@@ -58,7 +58,7 @@ private def mkHasParserEnumCommands (declName : Name) : TermElabM (Array Command
         | _ => .error ($(quote errorPrefix) ++ s ++ $(quote errorSuffix)))
   let instCmd ←
     `(instance : $parserClass:ident $typeName:ident where
-        parseFn := $(mkIdent parseName):ident)
+        parse := $(mkIdent parseName):ident)
   return #[parseCmd, instCmd]
 
 private def mkHasParserEnumInstanceHandler (declNames : Array Name) : CommandElabM Bool := do

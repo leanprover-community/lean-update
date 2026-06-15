@@ -180,7 +180,7 @@ public def runFetchLatest (args : List String) : IO Unit := do
   let releaseKind ←
     match args with
     | [] => getReleaseKindToFetch
-    | [kindStr] => IO.ofExcept <| HasParser.parse ReleaseKindToFetch kindStr
+    | [kindStr] => IO.ofExcept <| parseAs ReleaseKindToFetch kindStr
     | _ => throw <| IO.userError "fetchLatest expects at most one release kind argument"
   IO.println s!"Fetching the latest {releaseKind} Lean release..."
   let latestRelease ← getLatestLeanRelease releaseKind

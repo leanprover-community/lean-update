@@ -21,7 +21,7 @@ deriving Repr, BEq, ToString, HasParser
   | _ => false
 
 #guard
-  match (HasParser.parse ReleaseKindToFetch "nightly" : Except String ReleaseKindToFetch) with
+  match (parseAs ReleaseKindToFetch "nightly" : Except String ReleaseKindToFetch) with
   | .ok .nightly => true
   | _ => false
 
