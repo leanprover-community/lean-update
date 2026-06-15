@@ -63,15 +63,16 @@ public def getTargetLakePackageDirectory : IO FilePath := do
   let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
   pure <| resolveLakePackageDir workspace? packageDir
 
-/-- The input whether to update the `lean-toolchain` file. This is a wrapper around `Bool`. -/
-public structure UpdateLeanToolchain where
-  val : Bool
-deriving Wrapper
+/-- The input whether to update the `lean-toolchain` file. -/
+public inductive UpdateLeanToolchain where
+  | auto
+  | never
+deriving ToString, HasParser
 
 public instance : ActionInput UpdateLeanToolchain where
   envName := "UPDATE_LEAN_TOOLCHAIN"
   parse := parseAs UpdateLeanToolchain
-  localValue? := some ⟨true⟩
+  localValue? := some .auto
 
 /-- The input whether to perform a legacy update. This is a wrapper around `Bool`. -/
 public structure LegacyUpdate where

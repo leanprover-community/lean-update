@@ -179,11 +179,12 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
   Note that `lake update` command also modifies the `lean-toolchain` file.
   So the resulting `lean-toolchain` file may not be the same as the latest release fetched by this command.
 * The command read `UPDATE_LEAN_TOOLCHAIN`.
-  If it is set to `false`, this command does nothing. -/
+  If it is set to `never`, this command does nothing. -/
 public def runUpdateLeanToolchain : IO Unit := do
   let updateLeanToolchain ← Input.get UpdateLeanToolchain
-  if updateLeanToolchain then
-    IO.println "The input `update_lean_toolchain` is set to true."
+  match updateLeanToolchain with
+  | .auto =>
+    IO.println "The input `update_lean_toolchain` is set to auto."
 
     let releaseKind ← Input.get ReleaseKindToFetch
     IO.println s!"Fetching the latest {releaseKind} Lean release..."
@@ -197,7 +198,7 @@ public def runUpdateLeanToolchain : IO Unit := do
 
     IO.FS.writeFile leanToolchainFile s!"leanprover/lean4:{latestRelease.toString}\n"
     IO.println s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
-  else
-    IO.println "The input `update_lean_toolchain` is set to false."
+  | .never =>
+    IO.println "The input `update_lean_toolchain` is set to never."
     IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
     IO.println "Skipping setting the output `latest_lean`."

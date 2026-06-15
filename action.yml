@@ -20,11 +20,11 @@ inputs:
     description: |
       Controls whether to update the lean-toolchain file for projects with no dependencies.
       Allowed values:
-        * `true`: Update the lean-toolchain file to the latest release (default behavior)
-        * `false`: Do not update the lean-toolchain file
-      Default: `true`
+        * `auto`: Update the lean-toolchain file to the latest release (default behavior)
+        * `never`: Do not update the lean-toolchain file
+      Default: `auto`
     required: false
-    default: "true"
+    default: "auto"
 
   release_kind_to_fetch:
     description: |
@@ -118,7 +118,7 @@ outputs:
 
       ## Note
       * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
-      * This value is only set when `update_lean_toolchain` option is set to `true` and the lake package has no dependencies.
+      * This value is only set when `update_lean_toolchain` option is set to `auto` and the lake package has no dependencies.
     value: ${{ steps.update-lean-toolchain.outputs.latest_lean }}
   notify:
     description: |
