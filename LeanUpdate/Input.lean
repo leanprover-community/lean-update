@@ -2,7 +2,9 @@ module
 
 public meta import LeanUpdate.Deriving.ToString
 public meta import LeanUpdate.Deriving.HasParser
+public meta import LeanUpdate.Deriving.Wrapper
 public import LeanUpdate.HasParser
+public import LeanUpdate.Wrapper
 public import LeanUpdate.ActionInput
 import LeanUpdate.Env
 
@@ -25,9 +27,7 @@ public instance : ActionInput ReleaseKindToFetch where
 public structure LakePackageDirectory where
   /-- the raw path supplied by the action input -/
   val : FilePath
-
-public instance : Coe LakePackageDirectory FilePath where
-  coe x := x.val
+deriving Wrapper
 
 public instance : ActionInput LakePackageDirectory where
   envName := "LAKE_PACKAGE_DIRECTORY"
@@ -66,9 +66,7 @@ public def resolveTargetLakePackageDirectory : IO FilePath := do
 /-- The input whether to update the `lean-toolchain` file. This is a wrapper around `Bool`. -/
 public structure UpdateLeanToolchain where
   val : Bool
-
-public instance : Coe UpdateLeanToolchain Bool where
-  coe x := x.val
+deriving Wrapper
 
 public instance : ActionInput UpdateLeanToolchain where
   envName := "UPDATE_LEAN_TOOLCHAIN"
