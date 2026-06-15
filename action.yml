@@ -20,11 +20,11 @@ inputs:
     description: |
       Controls whether to update the lean-toolchain file for projects with no dependencies.
       Allowed values:
-        * `auto`: Automatically update lean-toolchain file to the latest release (default behavior)
-        * `never`: Never update the lean-toolchain file
-      Default: `auto`
+        * `true`: Update the lean-toolchain file to the latest release (default behavior)
+        * `false`: Do not update the lean-toolchain file
+      Default: `true`
     required: false
-    default: "auto"
+    default: "true"
 
   release_kind_to_fetch:
     description: |
@@ -114,7 +114,7 @@ outputs:
 
       ## Note
       * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
-      * This value is only set when `update_lean_toolchain` option is set to `auto` and the lake package has no dependencies.
+      * This value is only set when `update_lean_toolchain` option is set to `true` and the lake package has no dependencies.
     value: ${{ steps.fetch-latest-lean.outputs.latest_lean }}
   notify:
     description: |
@@ -145,7 +145,7 @@ runs:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: fetch the latest Lean release
-      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' }}
       id: fetch-latest-lean
       run: |
         : Fetch the latest Lean release
@@ -155,9 +155,10 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
         RELEASE_KIND_TO_FETCH: ${{ inputs.release_kind_to_fetch }}
+        UPDATE_LEAN_TOOLCHAIN: ${{ inputs.update_lean_toolchain }}
 
     - name: Update lean-toolchain file
-      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'auto' }}
+      if: ${{ steps.find-dependencies.outputs.has_dependency == 'false' && inputs.update_lean_toolchain == 'true' }}
       run: |
         : Update lean-toolchain file
         echo "leanprover/lean4:${LATEST_LEAN}" > lean-toolchain

@@ -21,10 +21,13 @@ public instance : ActionInput ReleaseKindToFetch where
   parse := ReleaseKindToFetch.parse
   localValue? := some .tagged
 
-/-- the directory of the target Lake package -/
+/-- The directory of the target Lake package. This is a wrapper around `FilePath`. -/
 public structure LakePackageDirectory where
   /-- the raw path supplied by the action input -/
-  toPath : FilePath
+  val : FilePath
+
+public instance : Coe LakePackageDirectory FilePath where
+  coe x := x.val
 
 public instance : ActionInput LakePackageDirectory where
   envName := "LAKE_PACKAGE_DIRECTORY"
@@ -58,4 +61,18 @@ public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : Fi
 public def resolveTargetLakePackageDirectory : IO FilePath := do
   let packageDir ← Input.get LakePackageDirectory
   let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
-  pure <| resolveLakePackageDir workspace? packageDir.toPath
+  pure <| resolveLakePackageDir workspace? packageDir
+
+/-- The input whether to update the `lean-toolchain` file. This is a wrapper around `Bool`. -/
+public structure UpdateLeanToolchain where
+  val : Bool
+
+public instance : Coe UpdateLeanToolchain Bool where
+  coe x := x.val
+
+public instance : ActionInput UpdateLeanToolchain where
+  envName := "UPDATE_LEAN_TOOLCHAIN"
+  parse := fun s => do
+    let b ← Bool.parse s
+    pure ⟨b⟩
+  localValue? := some ⟨true⟩

@@ -176,13 +176,17 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
 /-- Run the `fetchLatest` command.
 Release kind is taken from the environment variable `RELEASE_KIND_TO_FETCH`.
 But it would be overridden if a command-line argument is provided. -/
-public def runFetchLatest (args : List String) : IO Unit := do
-  let releaseKind ←
-    match args with
-    | [] => Input.get ReleaseKindToFetch
-    | [kindStr] => IO.ofExcept <| parseAs ReleaseKindToFetch kindStr
-    | _ => throw <| IO.userError "fetchLatest expects at most one release kind argument"
-  IO.println s!"Fetching the latest {releaseKind} Lean release..."
-  let latestRelease ← getLatestLeanRelease releaseKind
-  IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
-  GH.writeOutput "latest_lean" latestRelease.toString
+public def runFetchLatest : IO Unit := do
+  let updateLeanToolchain ← Input.get UpdateLeanToolchain
+  if updateLeanToolchain then
+    IO.println "The input `update_lean_toolchain` is set to true."
+
+    let releaseKind ← Input.get ReleaseKindToFetch
+    IO.println s!"Fetching the latest {releaseKind} Lean release..."
+
+    let latestRelease ← getLatestLeanRelease releaseKind
+    IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
+    GH.writeOutput "latest_lean" latestRelease.toString
+  else
+    IO.println "The input `update_lean_toolchain` is set to false."
+    IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
