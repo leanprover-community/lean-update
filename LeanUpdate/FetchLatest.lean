@@ -179,7 +179,7 @@ But it would be overridden if a command-line argument is provided. -/
 public def runFetchLatest (args : List String) : IO Unit := do
   let releaseKind ←
     match args with
-    | [] => getReleaseKindToFetch
+    | [] => Input.get ReleaseKindToFetch
     | [kindStr] => IO.ofExcept <| parseAs ReleaseKindToFetch kindStr
     | _ => throw <| IO.userError "fetchLatest expects at most one release kind argument"
   IO.println s!"Fetching the latest {releaseKind} Lean release..."
