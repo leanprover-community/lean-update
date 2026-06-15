@@ -1,6 +1,5 @@
 module
 
-
 open System
 
 /-- Get environment variable or throw an error if not found. -/
@@ -8,40 +7,3 @@ public def IO.getEnv! (key : String) : IO String := do
   match (← IO.getEnv key) with
   | .some value => pure value
   | .none => throw <| IO.userError s!"Environment variable '{key}' not found"
-
-/-- resolve a Lake package directory relative to the GitHub workspace when available -/
-public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : FilePath) : FilePath :=
-  if packageDir.isRelative then
-    match workspace? with
-    | .some workspace => workspace / packageDir
-    | .none => packageDir
-  else
-    packageDir
-
--- test for resolving a relative input path from the GitHub workspace
-#guard
-  let workspace : FilePath := "/tmp/workspace"
-  let packageDir : FilePath := "."
-  let resolved := resolveLakePackageDir (.some workspace) packageDir
-  resolved == workspace / packageDir
-
--- test for preserving an absolute input path
-#guard
-  let workspace : FilePath := "/tmp/workspace"
-  let packageDir : FilePath := "/tmp/other"
-  let resolved := resolveLakePackageDir (.some workspace) packageDir
-  resolved == packageDir
-
-/-- get the directory of the Lake package to update.
-Note: This github action itself is lake package. -/
-public def getLakePackageDir : IO FilePath := do
-  let packageDir : FilePath ←
-    match (← IO.getEnv "LAKE_PACKAGE_DIRECTORY") with
-    | .some path => pure path
-    | .none =>
-      -- for local testing
-      pure "."
-  let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
-  pure <| resolveLakePackageDir workspace? packageDir
-
-

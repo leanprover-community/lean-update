@@ -2,14 +2,14 @@ module
 
 import LeanUpdate.GH
 public import Lake.Load.Manifest
-import LeanUpdate.Env
+import LeanUpdate.Input
 
 open Lean Lake Std System
 
 /-- Run the dependency checker command. -/
 public def runFindDependencies : IO Unit := do
-  let lakePackageDir ← getLakePackageDir
-  let manifestFilePath := lakePackageDir / "lake-manifest.json"
+  let resolvedLakePackageDir ← resolveTargetLakePackageDirectory
+  let manifestFilePath := resolvedLakePackageDir / "lake-manifest.json"
   let manifest ← Lake.Manifest.load manifestFilePath
   let packageNames := manifest.packages
     |>.map fun package => package.name.toString (escape := false)
