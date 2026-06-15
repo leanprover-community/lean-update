@@ -7,7 +7,7 @@ package "LeanUpdate" where
 @[default_target]
 lean_lib «LeanUpdate» where
   -- add library configuration options here
-  globs := #[.submodules `LeanUpdate]
+  globs := #[.one `LeanUpdate, .submodules `LeanUpdate]
   leanOptions := #[
     ⟨`linter.missingDocs, true⟩
   ]

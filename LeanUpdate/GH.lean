@@ -1,6 +1,6 @@
 module
 
-public import LeanUpdate.Env
+import LeanUpdate.Env
 
 /-
 utils for GitHub Action

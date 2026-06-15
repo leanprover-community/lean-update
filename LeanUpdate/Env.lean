@@ -1,6 +1,5 @@
 module
 
-public import Lean
 
 open System
 
