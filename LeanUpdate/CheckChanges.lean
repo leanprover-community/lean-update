@@ -39,8 +39,8 @@ def checkChanges (updateIfModified : UpdateIfModified) (targetLakePackageDir : F
   let filesChanged := !changedFiles.isEmpty
   let doUpdate :=
     match updateIfModified with
-    | .leanToolchain => leanToolchainUpdated
-    | .lakeManifestJson => filesChanged
+    | .«lean-toolchain» => leanToolchainUpdated
+    | .«lake-manifest.json» => filesChanged
 
   pure {
     filesChanged
