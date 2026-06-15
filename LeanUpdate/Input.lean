@@ -1,17 +1,17 @@
 module
 
+public meta import LeanUpdate.Deriving.ToString
+
 /-- The kind of Lean release -/
 public inductive ReleaseKindToFetch where
   /-- tagged release, such as `v4.30.0` or `v4.31.0-rc2` -/
   | tagged
   /-- nightly release -/
   | nightly
-deriving Repr, BEq, DecidableEq
+deriving Repr, BEq, ToString
 
-public instance : ToString ReleaseKindToFetch where
-  toString
-    | .tagged => "tagged"
-    | .nightly => "nightly"
+#guard toString ReleaseKindToFetch.tagged == "tagged"
+#guard toString ReleaseKindToFetch.nightly == "nightly"
 
 /-- parse a string into a `ReleaseKindToFetch` -/
 public def ReleaseKindToFetch.parse (s : String) : Except String ReleaseKindToFetch :=
