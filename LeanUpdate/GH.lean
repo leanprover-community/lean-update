@@ -29,7 +29,7 @@ public def GH.writeOutput (key value : String) : IO Unit := do
     let path ← IO.getEnv! "GITHUB_OUTPUT"
     IO.FS.appendLineToFile path s!"{key}={value}"
   else
-    let line := s!"{key}={value}\n"
+    let line := s!"{key}={value}"
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
 
 def GH.writeGHEnv (key value : String) : IO Unit := do
