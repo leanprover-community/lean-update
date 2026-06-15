@@ -5,6 +5,7 @@ import Lean.Elab.Command
 import Lean.Elab.Term.TermElabM
 import Lean.Elab.Deriving.Util
 import Lean.Structure
+public import LeanUpdate.HasParser
 public import LeanUpdate.Wrapper
 
 open Lean Elab Command Meta
@@ -28,9 +29,11 @@ private partial def mkWrappedTypeSyntax (wrappedType : Expr) : TermElabM Term :=
 /--
 Derive `Wrapper` for a structure with exactly one field.
 
-The generated `Wrapper` instance unwraps values using the field projection.
+The generated `Wrapper` instance wraps values using structure instance syntax
+and unwraps values using the field projection. It also generates a `HasParser`
+instance whenever the wrapped type has one.
 -/
-private def mkWrapperInstance (declName : Name) : TermElabM Command := do
+private def mkWrapperCommands (declName : Name) : TermElabM (Array Command) := do
   let indVal ← getConstInfoInduct declName
   unless indVal.numParams == 0 do
     throwError "deriving Wrapper only supports structures without parameters"
@@ -54,18 +57,29 @@ private def mkWrapperInstance (declName : Name) : TermElabM Command := do
   let typeName := mkCIdent declName
   let wrappedTypeStx ← mkWrappedTypeSyntax wrappedType
   let wrapperClass := mkCIdent ``_root_.Wrapper
+  let hasParserClass := mkCIdent ``_root_.HasParser
+  let hasParserParse := mkCIdent ``_root_.HasParser.parse
+  let wrapFn := mkCIdent ``_root_.Wrapper.wrap
   let proj := mkCIdent projFn
-  `(instance : $wrapperClass:ident $typeName:ident where
+  let field := mkIdent fieldName
+  let wrapperCmd ← `(instance : $wrapperClass:ident $typeName:ident where
       wrappedType := $wrappedTypeStx:term
+      wrap := fun x => {$field:ident := x}
       unwrap := $proj:ident)
+  let hasParserCmd ←
+    `(instance [$hasParserClass:ident $wrappedTypeStx:term] : $hasParserClass:ident $typeName:ident where
+        parse s := do
+          let value ← ($hasParserParse:ident s : Except String $wrappedTypeStx:term)
+          pure <| $wrapFn:ident (α := $typeName:ident) value)
+  return #[wrapperCmd, hasParserCmd]
 
 private def mkWrapperInstanceHandler (declNames : Array Name) : CommandElabM Bool := do
   if !(← declNames.allM isInductive) || declNames.isEmpty then
     return false
   for declName in declNames do
     withoutExposeFromCtors declName do
-      let cmd ← liftTermElabM <| mkWrapperInstance declName
-      elabCommand cmd
+      let cmds ← liftTermElabM <| mkWrapperCommands declName
+      cmds.forM elabCommand
   return true
 
 initialize

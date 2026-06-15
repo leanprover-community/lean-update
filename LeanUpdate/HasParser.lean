@@ -17,3 +17,6 @@ public def Bool.parse (s : String) : Except String Bool :=
 
 public instance : HasParser Bool where
   parse := Bool.parse
+
+public instance : HasParser System.FilePath where
+  parse s := .ok (System.FilePath.mk s)

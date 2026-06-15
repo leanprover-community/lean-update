@@ -20,7 +20,7 @@ deriving Repr, BEq, ToString, HasParser
 
 public instance : ActionInput ReleaseKindToFetch where
   envName := "RELEASE_KIND_TO_FETCH"
-  parse := ReleaseKindToFetch.parse
+  parse := parseAs ReleaseKindToFetch
   localValue? := some .tagged
 
 /-- The directory of the target Lake package. This is a wrapper around `FilePath`. -/
@@ -31,7 +31,7 @@ deriving Wrapper
 
 public instance : ActionInput LakePackageDirectory where
   envName := "LAKE_PACKAGE_DIRECTORY"
-  parse := fun s => .ok ⟨FilePath.mk s⟩
+  parse := parseAs LakePackageDirectory
   localValue? := some ⟨FilePath.mk "."⟩
 
 /-- resolve a Lake package directory relative to the GitHub workspace when available -/
@@ -70,7 +70,15 @@ deriving Wrapper
 
 public instance : ActionInput UpdateLeanToolchain where
   envName := "UPDATE_LEAN_TOOLCHAIN"
-  parse := fun s => do
-    let b ← Bool.parse s
-    pure ⟨b⟩
+  parse := parseAs UpdateLeanToolchain
   localValue? := some ⟨true⟩
+
+/-- The input whether to perform a legacy update. This is a wrapper around `Bool`. -/
+public structure LegacyUpdate where
+  val : Bool
+deriving Wrapper
+
+public instance : ActionInput LegacyUpdate where
+  envName := "LEGACY_UPDATE"
+  parse := parseAs LegacyUpdate
+  localValue? := some ⟨false⟩
