@@ -242,9 +242,9 @@ runs:
       with:
         title: "Updates available and ready to merge"
         body: |
-          The `lean-toolchain` file has been updated to the following version:
+          The `lean-toolchain` file has been updated to the following content:
           ```
-          ${{ env.LEAN_UPDATE_LATEST_LEAN }}
+          ${{ env.LEAN_UPDATE_NEW_LEAN_TOOLCHAIN_CONTENT }}
           ```
         delete-branch: true
         branch: auto-update-lean/patch
