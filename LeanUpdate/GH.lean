@@ -36,12 +36,15 @@ public def GH.writeOutput (key value : String) : IO Unit := do
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
   IO.println s!"[Update GITHUB_OUTPUT]: {key}={value}"
 
-def GH.writeGHEnv (key value : String) : IO Unit := do
+/-- write a key-value pair to the GitHub Actions environment -/
+public def GH.writeGHEnv (key value : String) : IO Unit := do
+  let line := s!"LEAN_UPDATE_{key}={value}"
   if (← isRunningGHAction) then
     let GITHUB_ENV ← IO.getEnv! "GITHUB_ENV"
-    IO.FS.appendLineToFile GITHUB_ENV s!"LEAN_UPDATE_{key}={value}"
+    IO.FS.appendLineToFile GITHUB_ENV line
   else
-    IO.FS.appendLineToFile Local.GITHUB_ENV s!"LEAN_UPDATE_{key}={value}"
+    IO.FS.appendLineToFile Local.GITHUB_ENV line
+  IO.println s!"[Update GITHUB_ENV]: {line}"
 
 def GH.readGHEnv (key : String) : IO (Option String) := do
   if (← isRunningGHAction) then

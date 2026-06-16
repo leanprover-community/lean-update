@@ -192,6 +192,7 @@ public def runUpdateLeanToolchain : IO Unit := do
     let latestRelease ← getLatestLeanRelease releaseKind
     IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
     GH.writeOutput "latest_lean" latestRelease.toString
+    GH.writeGHEnv "LATEST_LEAN" latestRelease.toString
 
     let targetLakePackageDir ← getTargetLakePackageDirectory
     let leanToolchainFile := targetLakePackageDir / "lean-toolchain"
@@ -201,4 +202,4 @@ public def runUpdateLeanToolchain : IO Unit := do
   | .never =>
     IO.println "The input `update_lean_toolchain` is set to never."
     IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
-    IO.println "Skipping setting the output `latest_lean`."
+    IO.println "Skipping setting the output `latest_lean` and environment variable `LEAN_UPDATE_LATEST_LEAN`."

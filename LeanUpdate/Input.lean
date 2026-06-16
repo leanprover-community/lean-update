@@ -83,3 +83,28 @@ public instance : ActionInput LegacyUpdate where
   envName := "LEGACY_UPDATE"
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
+
+/-- The input that controls when to trigger updates based on modified files. -/
+public inductive UpdateIfModified where
+  /-- watch `lean-toolchain` file -/
+  | «lean-toolchain»
+  /-- watch `lake-manifest.json` file -/
+  | «lake-manifest.json»
+deriving Repr, BEq, ToString, HasParser
+
+#guard
+  let lst : List UpdateIfModified := [.«lean-toolchain», .«lake-manifest.json»]
+  lst.map toString == ["lean-toolchain", "lake-manifest.json"]
+
+#guard
+  let lst : List String := ["lean-toolchain", "lake-manifest.json"]
+  let result := lst
+    |>.map (parseAs UpdateIfModified ·)
+    |>.map Except.isOk
+    |>.all id
+  result
+
+public instance : ActionInput UpdateIfModified where
+  envName := "UPDATE_IF_MODIFIED"
+  parse := parseAs UpdateIfModified
+  localValue? := some .«lake-manifest.json»
