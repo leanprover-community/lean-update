@@ -5,9 +5,7 @@ import LeanUpdate.Input
 
 open IO Process System
 
-def leanToolchainFile : String := "lean-toolchain"
-
-def lakeManifestFile : String := "lake-manifest.json"
+def filesToWatch : List String := ["lean-toolchain", "lake-manifest.json"]
 
 structure CheckChangesResult where
   filesChanged : Bool
@@ -27,12 +25,9 @@ def hasGitDiffIgnoringWhitespace (cwd : FilePath) (path : String) : IO Bool := d
   pure !out.stdout.isEmpty
 
 def checkChanges (updateIfModified : UpdateIfModified) (targetLakePackageDir : FilePath) : IO CheckChangesResult := do
-  let leanToolchainUpdated ← hasGitDiffIgnoringWhitespace targetLakePackageDir leanToolchainFile
-  let lakeManifestUpdated ← hasGitDiffIgnoringWhitespace targetLakePackageDir lakeManifestFile
+  let changedFiles ← filesToWatch.filterM (hasGitDiffIgnoringWhitespace targetLakePackageDir)
+  let leanToolchainUpdated ← hasGitDiffIgnoringWhitespace targetLakePackageDir "lean-toolchain"
 
-  let changedFiles := #[]
-  let changedFiles := if leanToolchainUpdated then changedFiles.push leanToolchainFile else changedFiles
-  let changedFiles := if lakeManifestUpdated then changedFiles.push lakeManifestFile else changedFiles
   let filesChanged := !changedFiles.isEmpty
   let doUpdate :=
     match updateIfModified with
@@ -42,7 +37,7 @@ def checkChanges (updateIfModified : UpdateIfModified) (targetLakePackageDir : F
   pure {
     filesChanged
     doUpdate
-    changedFiles := String.intercalate " " changedFiles.toList
+    changedFiles := String.intercalate " " changedFiles
     leanToolchainUpdated
   }
 
