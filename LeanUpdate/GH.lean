@@ -72,10 +72,7 @@ def GH.readLocalGHEnv (key : String) : IO String := do
     |>.map (GH.parseGHEnvLine key ·)
     |>.reverse
     |>.findSome? id
-  match result? with
-  | .some value => pure value
-  | .none =>
-    throw <| IO.userError s!"Local environment variable 'LEAN_UPDATE_{key}' not found in file '{path}'"
+  pure <| result?.getD ""
 
 /-- Read a value previously written through `GH.writeGHEnv`. -/
 public def GH.readGHEnv (key : String) : IO (Option String) := do
