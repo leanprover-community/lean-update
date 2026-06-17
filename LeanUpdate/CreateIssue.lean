@@ -12,17 +12,6 @@ def maxIssueBodyLength : Nat := 65536
 def truncationNotice : String := "
 ...(truncated)"
 
-def buildOutputPrefix : String := "
-
-## Build Output
-
-```
-"
-
-def buildOutputSuffix : String := "
-```
-"
-
 structure IssueConfig where
   title : String
   description : String
@@ -112,7 +101,29 @@ def issueHeader (config : IssueConfig) : String :=
       ""
     else
       s!"\n{bulletList}"
-  s!"{config.description}\n\nFiles changed in update:{filesChanged}\n"
+  if config.description.isEmpty then
+    s!"Files changed in update:{filesChanged}"
+  else
+    s!"{config.description}\n\nFiles changed in update:{filesChanged}"
+
+def issueBodyTemplate (header buildOutput : String) : String :=
+  String.intercalate "\n" [
+    header,
+    "",
+    "## Build Output",
+    "",
+    "````",
+    buildOutput,
+    "````",
+    ""
+  ]
+
+def issueBodyFixedLength : Nat :=
+  (issueBodyTemplate "" "").length
+
+#guard
+  issueBodyTemplate "Files changed in update:" "ok" ==
+    "Files changed in update:\n\n## Build Output\n\n````\nok\n````\n"
 
 def truncateWithNotice (s : String) (maxLength : Nat) : String :=
   if s.length ≤ maxLength then
@@ -123,16 +134,15 @@ def truncateWithNotice (s : String) (maxLength : Nat) : String :=
     (s.take maxLength).copy
 
 def createIssueBody (config : IssueConfig) (buildOutput : String) : String :=
-  let fixedLength := buildOutputPrefix.length + buildOutputSuffix.length
   let header := issueHeader config
-  let maxHeaderLength := maxIssueBodyLength - fixedLength
+  let maxHeaderLength := maxIssueBodyLength - issueBodyFixedLength
   let (header, availableBuildOutputLength) :=
-    if maxIssueBodyLength < header.length + fixedLength then
+    if maxIssueBodyLength < header.length + issueBodyFixedLength then
       (truncateWithNotice header maxHeaderLength, 0)
     else
-      (header, maxIssueBodyLength - header.length - fixedLength)
+      (header, maxIssueBodyLength - header.length - issueBodyFixedLength)
   let buildOutput := truncateWithNotice buildOutput availableBuildOutputLength
-  header ++ buildOutputPrefix ++ buildOutput ++ buildOutputSuffix
+  issueBodyTemplate header buildOutput
 
 #guard
   let longText := String.ofList (List.replicate 70000 'x')
