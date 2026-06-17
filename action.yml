@@ -267,19 +267,13 @@ runs:
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && env.LEAN_UPDATE_DO_UPDATE == 'true'
       run: |
         : Open issue if the updated lean build was successful
-        TITLE="Updates available and have been tested to build correctly"
-        DESCRIPTION=""
-        LABEL_NAME="auto-update-lean"
-        LABEL_COLOR="0E8A16"
-
-        source ${{ github.action_path }}/scripts/create-issue.sh
+        lake exe leanUpdate createIssue success
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
-        GH_REPO: ${{ github.repository }}
-        CHANGED_FILES: ${{ env.LEAN_UPDATE_CHANGED_FILES }}
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
       shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
+      working-directory: ${{ github.action_path }}
 
     - name: Commit update if the updated lean build was successful
       if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && env.LEAN_UPDATE_DO_UPDATE == 'true'
@@ -297,18 +291,12 @@ runs:
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: |
         : Open issue if the updated lean build fails
-        TITLE="Updates available but manual intervention required"
-        DESCRIPTION="Try \`lake update\` and then investigate why this update causes the lean build to fail."
-        LABEL_NAME="auto-update-lean-fail"
-        LABEL_COLOR="D73A4A"
-
-        source ${{ github.action_path }}/scripts/create-issue.sh
+        lake exe leanUpdate createIssue failure
       env:
         GH_TOKEN: ${{ inputs.token }}
-        GH_REPO: ${{ github.repository }}
-        CHANGED_FILES: ${{ env.LEAN_UPDATE_CHANGED_FILES }}
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
       shell: bash
-      working-directory: ${{ inputs.lake_package_directory }}
+      working-directory: ${{ github.action_path }}
 
     - name: Action fails if the updated lean build fails
       if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
