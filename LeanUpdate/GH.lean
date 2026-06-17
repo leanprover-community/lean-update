@@ -86,12 +86,10 @@ public def GH.readGHEnv (key : String) : IO (Option String) := do
 
 /-- Read a value previously written through `GH.writeGHEnv`.
 This function throws an error if the environment variable is not found or is empty. -/
-public def GH.getGHEnv! (key : String) : IO String := do
+public def GH.readGHEnv! (key : String) : IO String := do
   if (← isRunningGHAction) then
-    let some value ← GH.readGHEnv key
+    let some value ← IO.getEnv s!"LEAN_UPDATE_{key}"
       | throw <| IO.userError s!"Environment variable 'LEAN_UPDATE_{key}' not found"
-    if value == "" then
-      throw <| IO.userError s!"Environment variable 'LEAN_UPDATE_{key}' should not be empty"
     pure value
   else
     GH.readLocalGHEnv key

@@ -9,8 +9,7 @@ open IO Process System
 
 def maxIssueBodyLength : Nat := 65536
 
-def truncationNotice : String := "
-...(truncated)"
+def truncationNotice : String := "...(truncated)"
 
 structure IssueConfig where
   title : String
@@ -44,25 +43,15 @@ def IssueKind.labelColor : IssueKind → String
   | .failure => "D73A4A"
 
 def getGitHubRepository : IO String := do
-  match (← IO.getEnv "GITHUB_REPOSITORY") with
+  let github_repository? ← IO.getEnv "GITHUB_REPOSITORY"
+  let gh_repo? ← IO.getEnv "GH_REPO"
+  match github_repository? <|> gh_repo? with
   | .some repo => pure repo
   | .none =>
-    match (← IO.getEnv "GH_REPO") with
-    | .some repo => pure repo
-    | .none =>
-      if (← GH.isRunningGHAction) then
-        throw <| IO.userError "Environment variable 'GITHUB_REPOSITORY' not found"
-      else
-        pure "owner/repo"
-
-def getChangedFiles : IO String := do
-  match (← IO.getEnv "LEAN_UPDATE_CHANGED_FILES") with
-  | .some changedFiles => pure changedFiles
-  | .none =>
     if (← GH.isRunningGHAction) then
-      throw <| IO.userError "Environment variable 'LEAN_UPDATE_CHANGED_FILES' not found"
+      throw <| IO.userError "Environment variable 'GITHUB_REPOSITORY' not found"
     else
-      pure ""
+      pure "owner/repo"
 
 def getIssueConfig (kind : IssueKind) : IO IssueConfig := do
   pure {
@@ -71,7 +60,7 @@ def getIssueConfig (kind : IssueKind) : IO IssueConfig := do
     labelName := kind.labelName
     labelColor := kind.labelColor
     repo := ← getGitHubRepository
-    changedFiles := ← getChangedFiles
+    changedFiles := ← GH.readGHEnv! "CHANGED_FILES"
   }
 
 def splitChangedFiles (changedFiles : String) : List String :=
