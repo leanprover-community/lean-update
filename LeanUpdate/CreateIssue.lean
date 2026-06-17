@@ -163,14 +163,6 @@ def throwProcessError (description : String) (out : Output) : IO Unit := do
   else
     throw <| IO.userError s!"{description} failed with exit code {out.exitCode}:\n{stderr}"
 
-def printDirectoryContents (cwd : FilePath) : IO Unit := do
-  let entries ← cwd.readDir
-  let contents := entries
-    |>.map (fun entry => entry.fileName)
-    |>.qsort (· < ·)
-    |>.toList
-  IO.println s!"Directory contents: {contents}"
-
 def runLakeBuild (cwd : FilePath) : IO String := do
   let out ← IO.Process.output {
     cmd := "lake"
@@ -252,8 +244,6 @@ public def runCreateIssue (kind : IssueKind) : IO Unit := do
   let config ← getIssueConfig kind
   let targetLakePackageDir ← getTargetLakePackageDirectory
   let isRunningGHAction ← GH.isRunningGHAction
-  if isRunningGHAction then
-    printDirectoryContents targetLakePackageDir
   let buildOutput ← runLakeBuild targetLakePackageDir
   let body := createIssueBody config buildOutput
   if !isRunningGHAction then
