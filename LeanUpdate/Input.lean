@@ -84,6 +84,30 @@ public instance : ActionInput LegacyUpdate where
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
 
+/-- Split the `build_args` action input into arguments for `lake build`. -/
+public def splitBuildArgs (buildArgs : String) : Array String :=
+  buildArgs
+    |>.replace "\n" " "
+    |>.replace "\t" " "
+    |>.splitOn " "
+    |>.filter (fun arg => !arg.isEmpty)
+    |> List.toArray
+
+#guard
+  let actual := splitBuildArgs "  --log-level=warning  \nFoo\tBar  "
+  let expected := #["--log-level=warning", "Foo", "Bar"]
+  actual == expected
+
+/-- The arguments passed to `lake build` by lean-action. -/
+public structure BuildArgs where
+  /-- the raw arguments after splitting on ASCII whitespace -/
+  val : Array String
+
+public instance : ActionInput BuildArgs where
+  envName := "BUILD_ARGS"
+  parse s := .ok ⟨splitBuildArgs s⟩
+  localValue? := some ⟨#["--log-level=warning"]⟩
+
 /-- The input that controls when to trigger updates based on modified files. -/
 public inductive UpdateIfModified where
   /-- watch `lean-toolchain` file -/

@@ -152,10 +152,10 @@ def throwProcessError (description : String) (out : Output) : IO Unit := do
   else
     throw <| IO.userError s!"{description} failed with exit code {out.exitCode}:\n{stderr}"
 
-def runLakeBuild (cwd : FilePath) : IO String := do
+def runLakeBuild (cwd : FilePath) (buildArgs : BuildArgs) : IO String := do
   let out ← IO.Process.output {
     cmd := "lake"
-    args := #["build", "--log-level=warning"]
+    args := #["build"] ++ buildArgs.val
     cwd := some cwd
   }
   let stderr :=
@@ -232,8 +232,9 @@ def printIssuePreview (config : IssueConfig) (body : String) : IO Unit := do
 public def runCreateIssue (kind : IssueKind) : IO Unit := do
   let config ← getIssueConfig kind
   let targetLakePackageDir ← getTargetLakePackageDirectory
+  let buildArgs ← Input.get BuildArgs
   let isRunningGHAction ← GH.isRunningGHAction
-  let buildOutput ← runLakeBuild targetLakePackageDir
+  let buildOutput ← runLakeBuild targetLakePackageDir buildArgs
   let body := createIssueBody config buildOutput
   if !isRunningGHAction then
     printIssuePreview config body

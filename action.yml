@@ -271,6 +271,7 @@ runs:
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
+        BUILD_ARGS: ${{ inputs.build_args }}
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
       shell: bash
       working-directory: ${{ github.action_path }}
@@ -294,6 +295,7 @@ runs:
         lake exe leanUpdate createIssue failure
       env:
         GH_TOKEN: ${{ inputs.token }}
+        BUILD_ARGS: ${{ inputs.build_args }}
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
       shell: bash
       working-directory: ${{ github.action_path }}
