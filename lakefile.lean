@@ -17,4 +17,4 @@ lean_exe leanUpdate where
 
 @[test_driver]
 lean_exe updateDependenciesEnvTest where
-  root := `test.UpdateDependenciesEnv
+  root := `Test.UpdateDependenciesEnv

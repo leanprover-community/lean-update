@@ -21,7 +21,7 @@ jobs:
         uses: ./
         with:
           on_update_succeeds: "silent"
-          lake_package_directory: "./test/SmokeSuccess"
+          lake_package_directory: "./Test/SmokeSuccess"
 
       - name: This update should succeed
         if: steps.update.outputs.result != 'update-success'
@@ -38,7 +38,7 @@ jobs:
         uses: ./
         with:
           on_update_succeeds: "silent"
-          lake_package_directory: "./test/SmokeSuccess"
+          lake_package_directory: "./Test/SmokeSuccess"
           release_kind_to_fetch: "nightly"
 
       - name: This update should succeed
@@ -53,7 +53,7 @@ jobs:
             exit 1
           fi
 
-          TOOLCHAIN=$(cat test/SmokeSuccess/lean-toolchain)
+          TOOLCHAIN=$(cat Test/SmokeSuccess/lean-toolchain)
           echo "Updated lean-toolchain: $TOOLCHAIN"
           if [[ ! "$TOOLCHAIN" =~ ^leanprover/lean4:nightly- ]]; then
             echo "Error: lean-toolchain should be updated to a nightly Lean release"
@@ -71,7 +71,7 @@ jobs:
         uses: ./
         with:
           on_update_fails: "silent"
-          lake_package_directory: "./test/Fail"
+          lake_package_directory: "./Test/Fail"
 
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'
