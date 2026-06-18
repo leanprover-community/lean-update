@@ -16,6 +16,27 @@ def lakeUpdateCommand (legacyUpdate : LegacyUpdate) : String :=
   else
     "lake update"
 
+/--
+Unset Lean/Lake toolchain-specific variables before running `lake update` in the
+target package. The lean-update executable itself runs under the action
+package's Lake environment; inheriting those variables can make Lake restart
+with a mixture of the old action toolchain and the target package's new
+toolchain.
+-/
+def emptyLakeEnv : Array (String × Option String) :=
+  #[
+    ("ELAN_TOOLCHAIN", none),
+    ("LAKE", none),
+    ("LAKE_HOME", none),
+    ("LAKE_OVERRIDE_LEAN", none),
+    ("LEAN", none),
+    ("LEAN_AR", none),
+    ("LEAN_GITHASH", none),
+    ("LEAN_PATH", none),
+    ("LEAN_SRC_PATH", none),
+    ("LEAN_SYSROOT", none)
+  ]
+
 /-- Run the dependency update command. -/
 public def runUpdateDependencies : IO Unit := do
   let legacyUpdate ← Input.get LegacyUpdate
@@ -29,6 +50,7 @@ public def runUpdateDependencies : IO Unit := do
     cmd := "lake"
     args := lakeUpdateArgs legacyUpdate
     cwd := some targetLakePackageDir
+    env := emptyLakeEnv
   }
   unless out.stdout.isEmpty do
     IO.print out.stdout
