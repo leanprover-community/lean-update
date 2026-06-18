@@ -1,6 +1,7 @@
 module
 
 import LeanUpdate.Input
+import LeanUpdate.LakeProcess
 
 open IO Process
 
@@ -25,11 +26,7 @@ public def runUpdateDependencies : IO Unit := do
   else
     IO.println "Using standard update command"
 
-  let out ← IO.Process.output {
-    cmd := "lake"
-    args := lakeUpdateArgs legacyUpdate
-    cwd := some targetLakePackageDir
-  }
+  let out ← IO.Process.lakeOutput targetLakePackageDir (args := lakeUpdateArgs legacyUpdate)
   unless out.stdout.isEmpty do
     IO.print out.stdout
   unless out.stderr.isEmpty do
