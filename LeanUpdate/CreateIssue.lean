@@ -4,6 +4,7 @@ import Lean
 import LeanUpdate.Env
 import LeanUpdate.GH
 import LeanUpdate.Input
+import LeanUpdate.LakeProcess
 
 open IO Process System
 
@@ -153,11 +154,7 @@ def throwProcessError (description : String) (out : Output) : IO Unit := do
     throw <| IO.userError s!"{description} failed with exit code {out.exitCode}:\n{stderr}"
 
 def runLakeBuild (cwd : FilePath) (buildArgs : BuildArgs) : IO String := do
-  let out ← IO.Process.output {
-    cmd := "lake"
-    args := #["build"] ++ buildArgs.val
-    cwd := some cwd
-  }
+  let out ← IO.Process.lakeOutput cwd (args := #["build"] ++ buildArgs.val)
   let stderr :=
     if out.stderr.isEmpty then
       ""
