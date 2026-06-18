@@ -1,10 +1,9 @@
 module
 
 import Lean
-import LeanUpdate.Env
+import LeanUpdate.IO
 import LeanUpdate.GH
 import LeanUpdate.Input
-import LeanUpdate.LakeProcess
 
 open IO Process System
 

@@ -1,6 +1,6 @@
 module
 
-import LeanUpdate.Env
+import LeanUpdate.IO
 import LeanUpdate.GH
 public meta import LeanUpdate.Input
 public import LeanUpdate.Input
