@@ -14,3 +14,7 @@ lean_lib «LeanUpdate» where
 
 lean_exe leanUpdate where
   root := `Main
+
+@[test_driver]
+lean_exe updateDependenciesEnvTest where
+  root := `test.UpdateDependenciesEnv
