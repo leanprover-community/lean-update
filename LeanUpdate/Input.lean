@@ -8,7 +8,7 @@ public import LeanUpdate.Wrapper
 public import LeanUpdate.GitHub.Action.Input
 import LeanUpdate.IO
 
-open System
+open System GitHub Action
 
 /-- The kind of Lean release -/
 public inductive ReleaseKindToFetch where
@@ -18,7 +18,7 @@ public inductive ReleaseKindToFetch where
   | nightly
 deriving Repr, BEq, ToString, HasParser
 
-public instance : GitHub.Action.Input ReleaseKindToFetch where
+public instance : Input ReleaseKindToFetch where
   envName := "RELEASE_KIND_TO_FETCH"
   parse := parseAs ReleaseKindToFetch
   localValue? := some .tagged
@@ -29,7 +29,7 @@ public structure LakePackageDirectory where
   val : FilePath
 deriving Wrapper
 
-public instance : GitHub.Action.Input LakePackageDirectory where
+public instance : Input LakePackageDirectory where
   envName := "LAKE_PACKAGE_DIRECTORY"
   parse := parseAs LakePackageDirectory
   localValue? := some ⟨FilePath.mk "."⟩
@@ -69,7 +69,7 @@ public inductive UpdateLeanToolchain where
   | never
 deriving ToString, HasParser
 
-public instance : GitHub.Action.Input UpdateLeanToolchain where
+public instance : Input UpdateLeanToolchain where
   envName := "UPDATE_LEAN_TOOLCHAIN"
   parse := parseAs UpdateLeanToolchain
   localValue? := some .auto
@@ -79,7 +79,7 @@ public structure LegacyUpdate where
   val : Bool
 deriving Wrapper
 
-public instance : GitHub.Action.Input LegacyUpdate where
+public instance : Input LegacyUpdate where
   envName := "LEGACY_UPDATE"
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
@@ -103,7 +103,7 @@ public structure BuildArgs where
   /-- the raw arguments after splitting on ASCII whitespace -/
   val : Array String
 
-public instance : GitHub.Action.Input BuildArgs where
+public instance : Input BuildArgs where
   envName := "BUILD_ARGS"
   parse s := .ok ⟨splitBuildArgs s⟩
   localValue? := some ⟨#["--log-level=warning"]⟩
@@ -128,7 +128,7 @@ deriving Repr, BEq, ToString, HasParser
     |>.all id
   result
 
-public instance : GitHub.Action.Input UpdateIfModified where
+public instance : Input UpdateIfModified where
   envName := "UPDATE_IF_MODIFIED"
   parse := parseAs UpdateIfModified
   localValue? := some .«lake-manifest.json»
