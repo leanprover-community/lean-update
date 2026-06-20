@@ -12,6 +12,9 @@ lean_lib «LeanUpdate» where
     ⟨`linter.missingDocs, true⟩
   ]
 
+lean_exe leanUpdate where
+  root := `Main
+
 @[test_driver]
 lean_exe updateDependenciesEnvTest where
   root := `Test.UpdateDependenciesEnv
