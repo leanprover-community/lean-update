@@ -28,7 +28,7 @@ public def writeGHOutput (key value : String) : IO Unit := do
     IO.FS.appendLineToFile GITHUB_OUTPUT line
   else
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
-  IO.println s!"[Update GITHUB_OUTPUT]: {key}={value}"
+  IO.println s!"[{decl_name%}]: {key}={value}"
 
 /-- write a key-value pair to the GitHub Actions environment -/
 public def writeGHEnv (key value : String) : IO Unit := do
@@ -38,7 +38,7 @@ public def writeGHEnv (key value : String) : IO Unit := do
     IO.FS.appendLineToFile GITHUB_ENV line
   else
     IO.FS.appendLineToFile Local.GITHUB_ENV line
-  IO.println s!"[Update GITHUB_ENV]: {line}"
+  IO.println s!"[{decl_name%}]: {line}"
 
 def parseGHEnvLine (key line : String) : Option String :=
   let envLinePrefix := s!"LEAN_UPDATE_{key}="
