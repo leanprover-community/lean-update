@@ -73,3 +73,25 @@ jobs:
             exit 1
           fi
           echo "notify output test passed"
+
+  latest_lean_output_test_with_dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "silent"
+          lake_package_directory: "./Fixtures/HasDep"
+
+      - name: output assertion of latest_lean
+        run: |
+          echo "Latest Lean version: ${{ steps.update.outputs.latest_lean }}"
+          if [[ ! "${{ steps.update.outputs.latest_lean }}" =~ ^v ]]; then
+            echo "Error: The latest_lean output should start with 'v' even when dependencies are present"
+            exit 1
+          fi
+          echo "latest_lean output test with dependencies passed"
