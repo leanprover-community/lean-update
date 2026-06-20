@@ -2,6 +2,7 @@ module
 
 import LeanUpdate.GitHub.Action.Env
 import LeanUpdate.Input
+public import LeanUpdate.IO
 
 open IO Process System
 
@@ -32,14 +33,11 @@ structure CheckChangesResult where
 * `path` is relative to the `cwd`
 -/
 def hasGitDiff (cwd : FilePath) (path : String) : IO Bool := do
-  let out ← IO.Process.output {
+  let out ← IO.Process.successOutput {
     cmd := "git"
     args := #["diff", "-w", "--", path]
     cwd := some cwd
   }
-  if out.exitCode != 0 then
-    let stderr := if out.stderr.isEmpty then "" else s!":\n{out.stderr}"
-    throw <| IO.userError s!"Failed to check git diff for {path} with exit code {out.exitCode}{stderr}"
   pure !out.stdout.isEmpty
 
 def checkFile (targetLakePackageDir : FilePath) (file : FilePath) : IO UpdateResult := do
@@ -75,10 +73,9 @@ public def runCheckChanges : IO Unit := do
     |>.map (fun (name, _) => name)
   let leanToolchainUpdated := result.leanToolchain.isChanged
   let newLeanToolchainContent := result.leanToolchain.newContent
-  IO.println s!"info: files_changed={filesChanged}, do_update={doUpdate}, changed_files={changedFiles}, lean_toolchain_updated={leanToolchainUpdated}"
 
   GitHub.Action.writeGHEnv "FILES_CHANGED" (toString filesChanged)
-  GitHub.Action.writeGHEnv "CHANGED_FILES" (String.intercalate " " changedFiles)
+  GitHub.Action.writeGHEnv "CHANGED_FILES" (toString changedFiles)
   GitHub.Action.writeGHEnv "DO_UPDATE" (toString doUpdate)
   GitHub.Action.writeGHEnv "LEAN_TOOLCHAIN_UPDATED" (toString leanToolchainUpdated)
 

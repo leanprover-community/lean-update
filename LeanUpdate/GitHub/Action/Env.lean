@@ -3,15 +3,18 @@ module
 import LeanUpdate.IO
 public import LeanUpdate.HasParser
 import LeanUpdate.Terminal
+public import LeanUpdate.GitHub.Repository
 import Std
 
 open Std
 
 /-- this is used for local testing -/
-def Local.GITHUB_OUTPUT : String := "tmp/output.txt"
+def Local.GITHUB_OUTPUT := "tmp/output.txt"
 
 /-- this is used for local testing -/
-def Local.GITHUB_ENV : String := "tmp/env.txt"
+def Local.GITHUB_ENV := "tmp/env.txt"
+
+def Local.GITHUB_REPOSITORY := "leanprover-community/lean-update"
 
 namespace GitHub.Action
 
@@ -23,6 +26,21 @@ public def isRunningGHAction : IO Bool := do
     let isAction ← IO.ofExcept <| Bool.parse isActionStr
     pure isAction
   | .none => pure false
+
+/-- the github repository which the github action is running on -/
+public def getGitHubRepository : IO Repository := do
+  let github_repository? ← IO.getEnv "GITHUB_REPOSITORY"
+  let gh_repo? ← IO.getEnv "GH_REPO"
+  match github_repository? <|> gh_repo? with
+  | .some repo =>
+    IO.println <| log% s!"GitHub repository found in environment variables: {repo}"
+    IO.ofExcept <| parseAs Repository repo
+  | .none =>
+    if (← GitHub.Action.isRunningGHAction) then
+      throw <| IO.userError "Environment variable 'GITHUB_REPOSITORY' not found"
+    else
+      IO.println <| log% s!"GitHub repository not found in environment variables, using default: {Local.GITHUB_REPOSITORY}"
+      IO.ofExcept <| parseAs Repository Local.GITHUB_REPOSITORY
 
 /-- write a key-value pair to the GitHub Actions output -/
 public def writeGHOutput (key value : String) : IO Unit := do
