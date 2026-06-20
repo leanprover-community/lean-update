@@ -34,6 +34,27 @@ jobs:
         if: steps.update.outputs.result != 'update-success'
         run: exit 1
 
+  mathlib_dependency_e2e_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package with mathlib dependency
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "silent"
+          lake_package_directory: "./Fixtures/MathlibDep"
+
+      - name: This update should succeed
+        if: steps.update.outputs.result != 'update-success'
+        run: exit 1
+
+      - name: The fixture should depend on mathlib
+        if: steps.update.outputs.has_dependency != 'true'
+        run: exit 1
+
   success_nightly_test:
     runs-on: ubuntu-latest
     steps:
