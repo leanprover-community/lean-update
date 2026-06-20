@@ -6,7 +6,7 @@ public meta import LeanUpdate.Deriving.Wrapper
 public import LeanUpdate.HasParser
 public import LeanUpdate.Wrapper
 public import LeanUpdate.ActionInput
-import LeanUpdate.Env
+import LeanUpdate.IO
 
 open System
 

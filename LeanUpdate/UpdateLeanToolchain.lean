@@ -1,13 +1,13 @@
 module
 
-import LeanUpdate.Env
+import LeanUpdate.IO
 import LeanUpdate.GH
 public meta import LeanUpdate.Input
 public import LeanUpdate.Input
 import Std.Time.Format
 public meta import Lake.Util.Version
 public import Lake.Util.Version
-public import Std.Time.Zoned.ZonedDateTime
+public import Std.Time
 
 open IO Process Lean Std Time
 
@@ -15,13 +15,12 @@ open IO Process Lean Std Time
 public structure LeanRelease where
   kind : ReleaseKindToFetch
   name : String
-  createdAt : ZonedDateTime
-deriving Repr
+  createdAt : DateTime
 
 /-- Lean's tagged release -/
 public structure LeanTaggedRelease where
   name : Lake.StdVer
-  createdAt : ZonedDateTime
+  createdAt : DateTime
 deriving Repr
 
 instance : Inhabited LeanTaggedRelease where
@@ -87,14 +86,14 @@ def parseLeanReleaseJson (json : Json) : Except String (Array LeanRelease) := do
   let arr ← json.getArr?
   arr.mapM fun item => do
     let name ← item.getObjValAs? String "name"
-    let createdAtStr ← item.getObjValAs? String "createdAt"
-    let createdAt ← ZonedDateTime.fromISO8601String createdAtStr
+    let createdAtStr : String ← item.getObjValAs? String "createdAt"
+    let createdAt ← DateTime.fromISO8601String createdAtStr
     let kind := if name.startsWith "nightly-" then .nightly else .tagged
     pure { kind, name, createdAt }
 
 open Lake
 
-def filterLeanReleaseByTime (releases : Array LeanRelease) (cutoff? : Option ZonedDateTime) : Array LeanRelease :=
+def filterLeanReleaseByTime (releases : Array LeanRelease) (cutoff? : Option DateTime) : Array LeanRelease :=
   match cutoff? with
   | some cutoff => releases.filter fun release => release.createdAt.toTimestamp ≤ cutoff.toTimestamp
   | none => releases
@@ -131,7 +130,7 @@ Get the latest Lean release of the given `kind : ReleaseKindToFetch`.
 Argument `now` is used for test purposes.
 This function return the latest release which is not newer than `now` if `now` is given.
 -/
-public def getLatestLeanRelease (kind : ReleaseKindToFetch) (now? : Option ZonedDateTime := none) : IO LeanRelease := do
+public def getLatestLeanRelease (kind : ReleaseKindToFetch) (now? : Option DateTime := none) : IO LeanRelease := do
   let json ← fetchAllLeanReleaseJson kind
   let releases ← IO.ofExcept <| parseLeanReleaseJson json
   let filteredReleases := filterLeanReleaseByTime releases now?
@@ -151,13 +150,13 @@ public def getLatestLeanRelease (kind : ReleaseKindToFetch) (now? : Option Zoned
       else
         pure sortedTaggedReleases[0].toLeanRelease
 
-def String.toZonedDateTime! (s : String) : ZonedDateTime :=
-  match ZonedDateTime.fromISO8601String s with
-  | .ok zdt => zdt
-  | .error err => panic! s!"Failed to parse '{s}' as ZonedDateTime: {err}"
+def String.toDateTime! (s : String) : DateTime :=
+  match DateTime.fromISO8601String s with
+  | .ok dt => dt
+  | .error err => panic! s!"Failed to parse '{s}' as DateTime: {err}"
 
-local instance : Coe String ZonedDateTime where
-  coe s := s.toZonedDateTime!
+local instance : Coe String DateTime where
+  coe s := s.toDateTime!
 
 def exampleTaggedRelease : Array LeanTaggedRelease :=
   let releases : Array LeanRelease := #[

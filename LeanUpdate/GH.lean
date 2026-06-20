@@ -1,6 +1,6 @@
 module
 
-import LeanUpdate.Env
+import LeanUpdate.IO
 import LeanUpdate.HasParser
 
 /-

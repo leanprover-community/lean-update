@@ -2,6 +2,12 @@ module
 
 open IO Process System
 
+/-- Get environment variable or throw an error if not found. -/
+public def IO.getEnv! (key : String) : IO String := do
+  match (← IO.getEnv key) with
+  | .some value => pure value
+  | .none => throw <| IO.userError s!"Environment variable '{key}' not found"
+
 /--
 Unset Lean/Lake toolchain-specific variables before running `lake update` in the
 target package. The lean-update executable itself runs under the action

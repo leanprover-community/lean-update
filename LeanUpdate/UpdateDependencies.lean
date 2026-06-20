@@ -1,7 +1,7 @@
 module
 
 import LeanUpdate.Input
-import LeanUpdate.LakeProcess
+import LeanUpdate.IO
 
 open IO Process
 
