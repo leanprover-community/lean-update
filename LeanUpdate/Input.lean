@@ -5,7 +5,7 @@ public meta import LeanUpdate.Deriving.HasParser
 public meta import LeanUpdate.Deriving.Wrapper
 public import LeanUpdate.HasParser
 public import LeanUpdate.Wrapper
-public import LeanUpdate.ActionInput
+public import LeanUpdate.GitHub.Action.Input
 import LeanUpdate.IO
 
 open System
@@ -18,7 +18,7 @@ public inductive ReleaseKindToFetch where
   | nightly
 deriving Repr, BEq, ToString, HasParser
 
-public instance : ActionInput ReleaseKindToFetch where
+public instance : GitHub.Action.Input ReleaseKindToFetch where
   envName := "RELEASE_KIND_TO_FETCH"
   parse := parseAs ReleaseKindToFetch
   localValue? := some .tagged
@@ -29,7 +29,7 @@ public structure LakePackageDirectory where
   val : FilePath
 deriving Wrapper
 
-public instance : ActionInput LakePackageDirectory where
+public instance : GitHub.Action.Input LakePackageDirectory where
   envName := "LAKE_PACKAGE_DIRECTORY"
   parse := parseAs LakePackageDirectory
   localValue? := some ⟨FilePath.mk "."⟩
@@ -59,7 +59,7 @@ public def resolveLakePackageDir (workspace? : Option FilePath) (packageDir : Fi
 
 /-- resolve the target Lake package directory supplied by the action input. -/
 public def getTargetLakePackageDirectory : IO FilePath := do
-  let packageDir ← Input.get LakePackageDirectory
+  let packageDir ← GitHub.Action.Input.get LakePackageDirectory
   let workspace? := (← IO.getEnv "GITHUB_WORKSPACE").map FilePath.mk
   pure <| resolveLakePackageDir workspace? packageDir
 
@@ -69,7 +69,7 @@ public inductive UpdateLeanToolchain where
   | never
 deriving ToString, HasParser
 
-public instance : ActionInput UpdateLeanToolchain where
+public instance : GitHub.Action.Input UpdateLeanToolchain where
   envName := "UPDATE_LEAN_TOOLCHAIN"
   parse := parseAs UpdateLeanToolchain
   localValue? := some .auto
@@ -79,7 +79,7 @@ public structure LegacyUpdate where
   val : Bool
 deriving Wrapper
 
-public instance : ActionInput LegacyUpdate where
+public instance : GitHub.Action.Input LegacyUpdate where
   envName := "LEGACY_UPDATE"
   parse := parseAs LegacyUpdate
   localValue? := some ⟨false⟩
@@ -103,7 +103,7 @@ public structure BuildArgs where
   /-- the raw arguments after splitting on ASCII whitespace -/
   val : Array String
 
-public instance : ActionInput BuildArgs where
+public instance : GitHub.Action.Input BuildArgs where
   envName := "BUILD_ARGS"
   parse s := .ok ⟨splitBuildArgs s⟩
   localValue? := some ⟨#["--log-level=warning"]⟩
@@ -128,7 +128,7 @@ deriving Repr, BEq, ToString, HasParser
     |>.all id
   result
 
-public instance : ActionInput UpdateIfModified where
+public instance : GitHub.Action.Input UpdateIfModified where
   envName := "UPDATE_IF_MODIFIED"
   parse := parseAs UpdateIfModified
   localValue? := some .«lake-manifest.json»

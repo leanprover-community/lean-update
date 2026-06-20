@@ -1,6 +1,6 @@
 module
 
-import LeanUpdate.GH
+import LeanUpdate.GitHub.Action.Env
 import LeanUpdate.Input
 
 open IO Process System
@@ -57,7 +57,7 @@ def checkChanges (targetLakePackageDir : FilePath) : IO CheckChangesResult := do
 
 /-- Run the update checker command. -/
 public def runCheckChanges : IO Unit := do
-  let updateIfModified ← Input.get UpdateIfModified
+  let updateIfModified ← GitHub.Action.Input.get UpdateIfModified
   let targetLakePackageDir ← getTargetLakePackageDirectory
   let result ← checkChanges targetLakePackageDir
 
@@ -77,13 +77,13 @@ public def runCheckChanges : IO Unit := do
   let newLeanToolchainContent := result.leanToolchain.newContent
   IO.println s!"info: files_changed={filesChanged}, do_update={doUpdate}, changed_files={changedFiles}, lean_toolchain_updated={leanToolchainUpdated}"
 
-  GH.writeGHEnv "FILES_CHANGED" (toString filesChanged)
-  GH.writeGHEnv "CHANGED_FILES" (String.intercalate " " changedFiles)
-  GH.writeGHEnv "DO_UPDATE" (toString doUpdate)
-  GH.writeGHEnv "LEAN_TOOLCHAIN_UPDATED" (toString leanToolchainUpdated)
+  GitHub.Action.writeGHEnv "FILES_CHANGED" (toString filesChanged)
+  GitHub.Action.writeGHEnv "CHANGED_FILES" (String.intercalate " " changedFiles)
+  GitHub.Action.writeGHEnv "DO_UPDATE" (toString doUpdate)
+  GitHub.Action.writeGHEnv "LEAN_TOOLCHAIN_UPDATED" (toString leanToolchainUpdated)
 
   if leanToolchainUpdated then
     IO.println s!"info: new lean-toolchain content: {newLeanToolchainContent}"
   else
     IO.println s!"info: lean-toolchain not updated, no new content"
-  GH.writeGHEnv "NEW_LEAN_TOOLCHAIN_CONTENT" newLeanToolchainContent
+  GitHub.Action.writeGHEnv "NEW_LEAN_TOOLCHAIN_CONTENT" newLeanToolchainContent

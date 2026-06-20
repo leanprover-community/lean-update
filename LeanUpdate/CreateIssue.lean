@@ -2,7 +2,7 @@ module
 
 import Lean
 import LeanUpdate.IO
-import LeanUpdate.GH
+import LeanUpdate.GitHub.Action.Env
 import LeanUpdate.Input
 
 open IO Process System
@@ -48,7 +48,7 @@ def getGitHubRepository : IO String := do
   match github_repository? <|> gh_repo? with
   | .some repo => pure repo
   | .none =>
-    if (← GH.isRunningGHAction) then
+    if (← GitHub.Action.isRunningGHAction) then
       throw <| IO.userError "Environment variable 'GITHUB_REPOSITORY' not found"
     else
       pure "owner/repo"
@@ -60,7 +60,7 @@ def getIssueConfig (kind : IssueKind) : IO IssueConfig := do
     labelName := kind.labelName
     labelColor := kind.labelColor
     repo := ← getGitHubRepository
-    changedFiles := ← GH.readGHEnv! "CHANGED_FILES"
+    changedFiles := ← GitHub.Action.readGHEnv! "CHANGED_FILES"
   }
 
 def splitChangedFiles (changedFiles : String) : List String :=
@@ -228,8 +228,8 @@ def printIssuePreview (config : IssueConfig) (body : String) : IO Unit := do
 public def runCreateIssue (kind : IssueKind) : IO Unit := do
   let config ← getIssueConfig kind
   let targetLakePackageDir ← getTargetLakePackageDirectory
-  let buildArgs ← Input.get BuildArgs
-  let isRunningGHAction ← GH.isRunningGHAction
+  let buildArgs ← GitHub.Action.Input.get BuildArgs
+  let isRunningGHAction ← GitHub.Action.isRunningGHAction
   let buildOutput ← runLakeBuild targetLakePackageDir buildArgs
   let body := createIssueBody config buildOutput
   if !isRunningGHAction then

@@ -19,7 +19,7 @@ def lakeUpdateCommand (legacyUpdate : LegacyUpdate) : String :=
 
 /-- Run the dependency update command. -/
 public def runUpdateDependencies : IO Unit := do
-  let legacyUpdate ← Input.get LegacyUpdate
+  let legacyUpdate ← GitHub.Action.Input.get LegacyUpdate
   let targetLakePackageDir ← getTargetLakePackageDirectory
   if legacyUpdate then
     IO.println "Using legacy update command"

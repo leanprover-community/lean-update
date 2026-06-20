@@ -1,13 +1,14 @@
 module
 
 import LeanUpdate.IO
-import LeanUpdate.GH
+import LeanUpdate.GitHub.Action.Env
 public meta import LeanUpdate.Input
 public import LeanUpdate.Input
 import Std.Time.Format
 public meta import Lake.Util.Version
 public import Lake.Util.Version
 public import Std.Time
+public import LeanUpdate.Terminal
 
 open IO Process Lean Std Time
 
@@ -178,27 +179,29 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
   Note that `lake update` command also modifies the `lean-toolchain` file.
   So the resulting `lean-toolchain` file may not be the same as the latest release fetched by this command.
 * The command read `UPDATE_LEAN_TOOLCHAIN`.
-  If it is set to `never`, this command does nothing. -/
+  If it is set to `never`, this command does not upate `lean-toolchain` file. -/
 public def runUpdateLeanToolchain : IO Unit := do
-  let updateLeanToolchain ← Input.get UpdateLeanToolchain
-  match updateLeanToolchain with
-  | .auto =>
-    IO.println "The input `update_lean_toolchain` is set to auto."
+  let updateLeanToolchain ← GitHub.Action.Input.get UpdateLeanToolchain
 
-    let releaseKind ← Input.get ReleaseKindToFetch
-    IO.println s!"Fetching the latest {releaseKind} Lean release..."
+  let releaseKind ← GitHub.Action.Input.get ReleaseKindToFetch
+  let latestRelease ← getLatestLeanRelease releaseKind
+  IO.println <| log% s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
+  GitHub.Action.writeGHOutput "latest_lean" latestRelease.toString
+  GitHub.Action.writeGHEnv "LATEST_LEAN" latestRelease.toString
 
-    let latestRelease ← getLatestLeanRelease releaseKind
-    IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
-    GH.writeOutput "latest_lean" latestRelease.toString
-    GH.writeGHEnv "LATEST_LEAN" latestRelease.toString
-
+  let hasDependency ← GitHub.Action.readGHEnvAs! "HAS_DEPENDENCY" (expectedType := Bool)
+  match updateLeanToolchain, hasDependency with
+  | .auto, false =>
     let targetLakePackageDir ← getTargetLakePackageDirectory
     let leanToolchainFile := targetLakePackageDir / "lean-toolchain"
 
-    IO.FS.writeFile leanToolchainFile s!"leanprover/lean4:{latestRelease.toString}\n"
-    IO.println s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
-  | .never =>
-    IO.println "The input `update_lean_toolchain` is set to never."
-    IO.println "Skipping fetching the latest Lean release and updating lean-toolchain file."
-    IO.println "Skipping setting the output `latest_lean` and environment variable `LEAN_UPDATE_LATEST_LEAN`."
+    let oldLeanToolChainContent := (← IO.FS.readFile leanToolchainFile).trimAscii.copy
+    let newLeanToolchainContent := s!"leanprover/lean4:{latestRelease.toString}"
+
+    IO.FS.writeFile leanToolchainFile s!"{newLeanToolchainContent}\n"
+    if oldLeanToolChainContent == newLeanToolchainContent then
+      IO.println <| log% s!"lean-toolchain file is already up-to-date with the latest {releaseKind} Lean release."
+    else
+      IO.println <| log% s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
+  | _, _ =>
+    IO.println <| log% "Skipping updating lean-toolchain file."
