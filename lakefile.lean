@@ -14,6 +14,7 @@ lean_lib «LeanUpdate» where
 
 lean_exe leanUpdate where
   root := `Main
+  supportInterpreter := true
 
 @[test_driver]
 lean_exe updateDependenciesEnvTest where

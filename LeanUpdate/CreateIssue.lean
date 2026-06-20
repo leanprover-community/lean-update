@@ -7,7 +7,7 @@ import LeanUpdate.Input
 import LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.GitHub.Repository
 public meta import LeanUpdate.PostUpdateValidation
-public import LeanUpdate.SizedStr
+public meta import LeanUpdate.SizedStr
 public import LeanUpdate.CheckChanges
 
 open IO Process System
