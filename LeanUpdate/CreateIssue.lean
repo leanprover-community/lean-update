@@ -51,31 +51,32 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   bodyList := bodyList ++ changedFilesMsg
 
   let truncationNotice := "...(truncated)"
-  let buildOutput := result.buildResult.toString
-    |> (SizedStr.truncateWithNotice · truncationNotice 32000)
-    |>.val
-  bodyList := bodyList ++ [
-    "",
-    "## Build Output",
-    "",
-    "````",
-    buildOutput,
-    "````",
-    ""
-  ]
-  if h : result.testResult?.isSome then
-    let testOutput := (result.testResult?.get h).toString
-      |> (SizedStr.truncateWithNotice · truncationNotice 32000)
-      |>.val
-    let testResultMsg := [
-      "## Test Output",
+  if !result.buildResult.isOk then
+    let buildOutput := result.buildResult.toString
+      |> (String.truncateWithNotice · truncationNotice 32000)
+    let buildResultMsg := [
+      "## Build Output",
       "",
       "````",
-      testOutput,
+      buildOutput,
       "````",
       ""
     ]
-    bodyList := bodyList ++ testResultMsg
+    bodyList := bodyList ++ buildResultMsg
+
+  if let some testResult := result.testResult? then
+    if !Except.isOk testResult then
+      let testOutput := testResult.toString
+        |> (String.truncateWithNotice · truncationNotice 32000)
+      let testResultMsg := [
+        "## Test Output",
+        "",
+        "````",
+        testOutput,
+        "````",
+        ""
+      ]
+      bodyList := bodyList ++ testResultMsg
   let body := String.intercalate "\n" bodyList
   ⟨body, by apply sorry_proof⟩
 
