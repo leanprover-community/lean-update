@@ -9,10 +9,10 @@ import Std
 open Std
 
 /-- this is used for local testing -/
-def Local.GITHUB_OUTPUT := "tmp/output.txt"
+def Local.GITHUB_OUTPUT := "tmp/GITHUB_OUTPUT.txt"
 
 /-- this is used for local testing -/
-def Local.GITHUB_ENV := "tmp/env.txt"
+def Local.GITHUB_ENV := "tmp/GITHUB_ENV.txt"
 
 def Local.GITHUB_REPOSITORY := "leanprover-community/lean-update"
 
