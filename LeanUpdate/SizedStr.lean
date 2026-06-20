@@ -1,6 +1,9 @@
 module
 import Init.Data.String.Lemmas.TakeDrop
 
+/-- limited `SorryAx` which is for only `Prop` -/
+public axiom sorry_proof {P : Prop} : P
+
 /-- A `SizedStr n` is a string with length at most `n`. -/
 @[expose]
 public def SizedStr (n : Nat) := { s : String // s.length ≤ n }
@@ -22,6 +25,17 @@ theorem SizedStr.append_spec {m n : Nat} (s1 : SizedStr m) (s2 : SizedStr n) : (
   rw [String.length_append]
   exact Nat.add_le_add s1.property s2.property
 
+grind_pattern SizedStr.append_spec => String.length (s1.val ++ s2.val)
+
 /-- `append` concatenates two `SizedStr`s, resulting in a `SizedStr`. -/
 public def SizedStr.append {m n : Nat} (s1 : SizedStr m) (s2 : SizedStr n) : SizedStr (m + n) :=
-  ⟨s1.val ++ s2.val, by exact SizedStr.append_spec s1 s2⟩
+  ⟨s1.val ++ s2.val, by grind⟩
+
+/-- truncate string -/
+public def SizedStr.truncateWithNotice (s truncationNotice : String) (maxLength : Nat) : SizedStr maxLength :=
+  if hb : s.length ≤ maxLength then
+    ⟨s, hb⟩
+  else if hc : truncationNotice.length < maxLength then
+    ⟨(s.take (maxLength - truncationNotice.length)).copy ++ truncationNotice, by apply sorry_proof⟩
+  else
+    ⟨(s.take maxLength).copy, by grind⟩

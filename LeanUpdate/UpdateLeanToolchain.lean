@@ -9,6 +9,7 @@ public meta import Lake.Util.Version
 public import Lake.Util.Version
 public import Std.Time
 public import LeanUpdate.Terminal
+public import LeanUpdate.FindDep
 
 open IO Process Lean Std Time
 
@@ -185,7 +186,7 @@ public def runUpdateLeanToolchain : IO Unit := do
   GitHub.Action.writeGHOutput "latest_lean" latestRelease.toString
   GitHub.Action.writeGHEnv "LATEST_LEAN" latestRelease.toString
 
-  let hasDependency ← GitHub.Action.readGHEnvAs! "HAS_DEPENDENCY" (expectedType := Bool)
+  let hasDependency ← LeanUpdate.hasDependency
   match updateLeanToolchain, hasDependency with
   | .auto, false =>
     let targetLakePackageDir ← getTargetLakePackageDirectory

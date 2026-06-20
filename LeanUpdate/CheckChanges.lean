@@ -53,6 +53,16 @@ def checkChanges (targetLakePackageDir : FilePath) : IO CheckChangesResult := do
   let lakeManifestResult ← checkFile targetLakePackageDir "lake-manifest.json"
   pure { lakeManifest := lakeManifestResult, leanToolchain := leanToolchainResult }
 
+/-- Get the list of changed files.
+Changed file is `lean-toolchain` or `lake-manifest.json`. -/
+public def LeanUpdate.getChangedFiles : IO (List String) := do
+  let targetLakePackageDir ← getTargetLakePackageDirectory
+  let result ← checkChanges targetLakePackageDir
+  let changedFiles := [("lake-manifest.json", result.lakeManifest), ("lean-toolchain", result.leanToolchain)]
+    |>.filter (fun (_, res) => res.isChanged)
+    |>.map (fun (name, _) => name)
+  pure changedFiles
+
 /-- Run the update checker command. -/
 public def runCheckChanges : IO Unit := do
   let updateIfModified ← GitHub.Action.Input.get UpdateIfModified

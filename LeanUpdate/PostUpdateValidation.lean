@@ -13,14 +13,26 @@ public abbrev BuildResult := Except String Unit
 /-- the result of `lake test` command -/
 public abbrev TestResult := Except String Unit
 
+/-- convert `BuildResult` to string -/
+public def BuildResult.toString (result : BuildResult) : String :=
+  match result with
+  | Except.ok _ => "Build completed successfully"
+  | Except.error err => err
+
+/-- convert `TestResult` to string -/
+public def TestResult.toString (result : TestResult) : String :=
+  match result with
+  | Except.ok _ => "All tests passed successfully"
+  | Except.error err => err
+
 /-- the result of the post update validation -/
-public structure UpdateValidationResult where
+public structure PostUpdateValidationResult where
   /-- the result of `lake build` command. -/
   buildResult : BuildResult
 
   /-- the result of `lake test` command.
   this is `none` if `test_driver` not registered -/
-  testResult : Option TestResult
+  testResult? : Option TestResult
 
 /-- Run `lake build` command and get the result. -/
 public def runLakeBuild (cwd : FilePath) (buildArgs : BuildArgs) : IO BuildResult := do
@@ -43,15 +55,24 @@ public def runLakeTest (cwd : FilePath) : IO TestResult := do
   let testOutput := out.stdout.trimAscii.copy ++ "\n" ++ out.stderr.trimAscii.copy
   pure (Except.error testOutput)
 
+/-- result is success -/
+public def PostUpdateValidationResult.isSuccess (result : PostUpdateValidationResult) : Bool :=
+  result.buildResult.isOk && (result.testResult?.all (·.isOk))
+
+/-- result is failure -/
+public def PostUpdateValidationResult.isFailure (result : PostUpdateValidationResult) : Bool :=
+  !result.isSuccess
+
 /-- Run post update validation including `lake build` and `lake test` commands. -/
-public def runPostUpdateValidation (buildArgs : BuildArgs) : IO UpdateValidationResult := do
+public def runPostUpdateValidation : IO PostUpdateValidationResult := do
+  let buildArgs ← GitHub.Action.Input.get BuildArgs
   let targetLakePackageDir ← getTargetLakePackageDirectory
   let buildResult ← runLakeBuild targetLakePackageDir buildArgs
   let hasTestDriver ← hasTestDriver targetLakePackageDir
   if hasTestDriver then
     IO.println <| log% "Target lake package has a test driver"
     let testResult ← runLakeTest targetLakePackageDir
-    return { buildResult := buildResult, testResult := some testResult }
+    return { buildResult := buildResult, testResult? := some testResult }
   else
     IO.println <| log% "Target lake package does not have a test driver, skipping tests"
-    return { buildResult := buildResult, testResult := none }
+    return { buildResult := buildResult, testResult? := none }
