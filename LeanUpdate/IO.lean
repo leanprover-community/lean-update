@@ -52,7 +52,7 @@ public def lakeOutput (cwd : FilePath) (args : Array String) : IO Output :=
 /-- a variant of `IO.Process.output` that ensures the process succeeds. -/
 public abbrev SuccessOutput := { out : Output // out.exitCode == 0 }
 
-/-- field access syntax for `stdout` of `SuccessOutput` -/
+/-- get `stdout` of `SuccessOutput` -/
 public def SuccessOutput.stdout (so : SuccessOutput) : String := so.val.stdout
 
 /-- Run a process and ensure it succeeds, printing error and `stderr` if available.

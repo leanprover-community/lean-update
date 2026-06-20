@@ -1,6 +1,8 @@
 module
 
 public import LeanUpdate.HasParser
+public import LeanUpdate.IO
+public import Lean
 
 namespace GitHub
 
@@ -32,5 +34,15 @@ public def Repository.hasLabel (repo : Repository) (labelName : String) : IO Boo
     args := #["api", s!"repos/{repo}/labels/{labelName}", "--silent"]
   }
   pure <| out.exitCode == 0
+
+/-- Check if a GitHub repository has an open issue with a specific label. -/
+public def Repository.hasOpenIssueWithLabel (repo : Repository) (labelName : String) : IO Bool := do
+  let out ← IO.Process.successOutput {
+    cmd := "gh"
+    args := #["issue", "list", "--repo", repo.toString, "--label", labelName, "--state", "open", "--json", "number"]
+  }
+  let json ← IO.ofExcept <| Lean.Json.parse out.stdout
+  let issues ← IO.ofExcept <| json.getArr?
+  pure <| !issues.isEmpty
 
 end GitHub
