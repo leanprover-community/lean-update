@@ -1,6 +1,6 @@
 module
 
-import LeanUpdate.GH
+import LeanUpdate.GitHub.Action.Env
 public import Lake.Load.Manifest
 import LeanUpdate.Input
 
@@ -16,9 +16,9 @@ public def runFindDependencies : IO Unit := do
   let hasDep : Bool := !packageNames.isEmpty
   if hasDep then
     IO.println s!"The repository has some dependencies: {packageNames}"
-    GH.writeOutput "has_dependency" "true"
-    GH.writeGHEnv "HAS_DEPENDENCY" "true"
+    GitHub.Action.writeGHOutput "has_dependency" "true"
+    GitHub.Action.writeGHEnv "HAS_DEPENDENCY" "true"
   else
     IO.println "The repository has no dependencies."
-    GH.writeOutput "has_dependency" "false"
-    GH.writeGHEnv "HAS_DEPENDENCY" "false"
+    GitHub.Action.writeGHOutput "has_dependency" "false"
+    GitHub.Action.writeGHEnv "HAS_DEPENDENCY" "false"

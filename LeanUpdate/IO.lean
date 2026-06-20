@@ -2,6 +2,11 @@ module
 
 open IO Process System
 
+/-- Append a new line to a file. -/
+public def IO.FS.appendLineToFile (path : System.FilePath) (line : String) : IO Unit :=
+  IO.FS.withFile path IO.FS.Mode.append fun h => do
+    h.putStr s!"{line}\n"
+
 /-- Get environment variable or throw an error if not found. -/
 public def IO.getEnv! (key : String) : IO String := do
   match (← IO.getEnv key) with
@@ -9,8 +14,8 @@ public def IO.getEnv! (key : String) : IO String := do
   | .none => throw <| IO.userError s!"Environment variable '{key}' not found"
 
 /--
-Unset Lean/Lake toolchain-specific variables before running `lake update` in the
-target package. The lean-update executable itself runs under the action
+Unset Lean/Lake toolchain-specific variables before running `lake update` in
+the target package. The lean-update executable itself runs under the action
 package's Lake environment; inheriting those variables can make Lake restart
 with a mixture of the old action toolchain and the target package's new
 toolchain.

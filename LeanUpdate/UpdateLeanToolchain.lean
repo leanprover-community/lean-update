@@ -1,7 +1,7 @@
 module
 
 import LeanUpdate.IO
-import LeanUpdate.GH
+import LeanUpdate.GitHub.Action.Env
 public meta import LeanUpdate.Input
 public import LeanUpdate.Input
 import Std.Time.Format
@@ -180,18 +180,18 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
 * The command read `UPDATE_LEAN_TOOLCHAIN`.
   If it is set to `never`, this command does nothing. -/
 public def runUpdateLeanToolchain : IO Unit := do
-  let updateLeanToolchain ← Input.get UpdateLeanToolchain
+  let updateLeanToolchain ← GitHub.Action.Input.get UpdateLeanToolchain
   match updateLeanToolchain with
   | .auto =>
     IO.println "The input `update_lean_toolchain` is set to auto."
 
-    let releaseKind ← Input.get ReleaseKindToFetch
+    let releaseKind ← GitHub.Action.Input.get ReleaseKindToFetch
     IO.println s!"Fetching the latest {releaseKind} Lean release..."
 
     let latestRelease ← getLatestLeanRelease releaseKind
     IO.println s!"Latest {releaseKind} Lean release: {latestRelease.toString}"
-    GH.writeOutput "latest_lean" latestRelease.toString
-    GH.writeGHEnv "LATEST_LEAN" latestRelease.toString
+    GitHub.Action.writeGHOutput "latest_lean" latestRelease.toString
+    GitHub.Action.writeGHEnv "LATEST_LEAN" latestRelease.toString
 
     let targetLakePackageDir ← getTargetLakePackageDirectory
     let leanToolchainFile := targetLakePackageDir / "lean-toolchain"
