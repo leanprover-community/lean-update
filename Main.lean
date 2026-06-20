@@ -15,5 +15,11 @@ public def main (args : List String) : IO Unit := do
   | ["updateDependencies"] => runUpdateDependencies
   | ["updateLeanToolchain"] => runUpdateLeanToolchain
   | ["validateUpdate"] =>
-    let _ ← runPostUpdateValidation
+    let result ← runPostUpdateValidation
+    if let .error err := result.buildResult then
+      IO.eprintln err
+    if let some (.error err) := result.testResult? then
+      IO.eprintln err
+    if result.isFailure then
+      throw <| IO.userError "post-update validation failed"
   | _ => throw <| IO.userError "invalid arguments of leanUpdate"
