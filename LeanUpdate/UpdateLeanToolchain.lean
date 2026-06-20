@@ -179,7 +179,7 @@ def exampleTaggedRelease : Array LeanTaggedRelease :=
   Note that `lake update` command also modifies the `lean-toolchain` file.
   So the resulting `lean-toolchain` file may not be the same as the latest release fetched by this command.
 * The command read `UPDATE_LEAN_TOOLCHAIN`.
-  If it is set to `never`, this command does nothing. -/
+  If it is set to `never`, this command does not upate `lean-toolchain` file. -/
 public def runUpdateLeanToolchain : IO Unit := do
   let updateLeanToolchain ← GitHub.Action.Input.get UpdateLeanToolchain
 
@@ -204,4 +204,4 @@ public def runUpdateLeanToolchain : IO Unit := do
     else
       IO.println <| log% s!"Updated {leanToolchainFile} with the latest {releaseKind} Lean release."
   | _, _ =>
-    IO.println <| log% "Skipping fetching the updating lean-toolchain file."
+    IO.println <| log% "Skipping updating lean-toolchain file."
