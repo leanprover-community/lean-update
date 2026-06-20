@@ -98,7 +98,7 @@ public def splitBuildArgs (buildArgs : String) : Array String :=
   let expected := #["--log-level=warning", "Foo", "Bar"]
   actual == expected
 
-/-- The arguments passed to `lake build` by lean-action. -/
+/-- The arguments passed to `lake build` during post-update validation. -/
 public structure BuildArgs where
   /-- the raw arguments after splitting on ASCII whitespace -/
   val : Array String
