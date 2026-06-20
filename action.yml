@@ -118,7 +118,7 @@ outputs:
 
       ## Note
       * This is not necessarily matching to the updated content of the lean-toolchain file of the lake package.
-      * This value is only set when `update_lean_toolchain` option is set to `auto` and the lake package has no dependencies.
+      * This value is fetched according to the `release_kind_to_fetch` option.
     value: ${{ steps.update-lean-toolchain.outputs.latest_lean }}
   notify:
     description: |
@@ -149,7 +149,6 @@ runs:
         LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
 
     - name: Update lean-toolchain file
-      if: env.LEAN_UPDATE_HAS_DEPENDENCY == 'false'
       id: update-lean-toolchain
       run: |
         : Update lean-toolchain file

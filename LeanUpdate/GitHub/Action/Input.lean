@@ -1,6 +1,7 @@
 module
 
 public import LeanUpdate.GitHub.Action.Env
+public import LeanUpdate.Terminal
 
 namespace GitHub.Action
 
@@ -18,13 +19,16 @@ public def Input.get (α : Type) [Input α] : IO α := do
   let envVarName := Input.envName α
   match (← IO.getEnv envVarName) with
   | .some valueStr =>
+    IO.println <| log% s!"Input {``envVarName.toLower``} is set to {valueStr}"
     IO.ofExcept <| Input.parse valueStr
   | .none =>
     if !(← isRunningGHAction) then
       match (Input.localValue? : Option α) with
-      | some localVal => pure localVal
-      | none => throw <| IO.userError s!"Environment variable '{envVarName}' not found and no local default value provided."
+      | some localVal =>
+        IO.println <| log% s!"Using local default value for {``envVarName.toLower``}"
+        pure localVal
+      | none => throw <| IO.userError s!"Environment variable {``envVarName``} not found and no local default value provided."
     else
-      throw <| IO.userError s!"Environment variable '{envVarName}' not found."
+      throw <| IO.userError s!"Environment variable {``envVarName``} not found."
 
 end GitHub.Action

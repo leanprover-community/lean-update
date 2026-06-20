@@ -2,6 +2,10 @@ module
 
 import LeanUpdate.IO
 import LeanUpdate.HasParser
+import LeanUpdate.Terminal
+import Std
+
+open Std
 
 /-- this is used for local testing -/
 def Local.GITHUB_OUTPUT : String := "tmp/output.txt"
@@ -28,7 +32,7 @@ public def writeGHOutput (key value : String) : IO Unit := do
     IO.FS.appendLineToFile GITHUB_OUTPUT line
   else
     IO.FS.appendLineToFile Local.GITHUB_OUTPUT line
-  IO.println s!"[{decl_name%}]: {key}={value}"
+  IO.println <| log% s!"{key}={value}"
 
 /-- write a key-value pair to the GitHub Actions environment -/
 public def writeGHEnv (key value : String) : IO Unit := do
@@ -38,7 +42,7 @@ public def writeGHEnv (key value : String) : IO Unit := do
     IO.FS.appendLineToFile GITHUB_ENV line
   else
     IO.FS.appendLineToFile Local.GITHUB_ENV line
-  IO.println s!"[{decl_name%}]: {line}"
+  IO.println <| log% line
 
 def parseGHEnvLine (key line : String) : Option String :=
   let envLinePrefix := s!"LEAN_UPDATE_{key}="
