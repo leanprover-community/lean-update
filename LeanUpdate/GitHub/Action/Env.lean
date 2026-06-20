@@ -1,7 +1,7 @@
 module
 
 import LeanUpdate.IO
-import LeanUpdate.HasParser
+public import LeanUpdate.HasParser
 import LeanUpdate.Terminal
 import Std
 
@@ -79,6 +79,13 @@ public def readGHEnv (key : String) : IO (Option String) := do
   else
     readLocalGHEnv key
 
+/-- Read and parse a value previously written through `GitHub.Action.writeGHEnv`. -/
+public def readGHEnvAs (key : String) (expectedType : Type) [HasParser expectedType] : IO (Option expectedType) := do
+  let some valueStr ← readGHEnv key
+    | pure none
+  let value ← IO.ofExcept <| parseAs expectedType valueStr
+  pure <| some value
+
 /-- Read a value previously written through `GitHub.Action.writeGHEnv`.
 This function throws an error if the environment variable is not found or is empty. -/
 public def readGHEnv! (key : String) : IO String := do
@@ -88,5 +95,11 @@ public def readGHEnv! (key : String) : IO String := do
     pure value
   else
     readLocalGHEnv key
+
+/-- Read and parse a value previously written through `GitHub.Action.writeGHEnv`.
+This function throws an error if the environment variable is not found or is empty. -/
+public def readGHEnvAs! (key : String) (expectedType : Type) [HasParser expectedType] : IO expectedType := do
+  let valueStr ← readGHEnv! key
+  IO.ofExcept <| parseAs expectedType valueStr
 
 end GitHub.Action
