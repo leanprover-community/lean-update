@@ -16,3 +16,8 @@ public def String.truncateWithNotice (s truncationNotice : String) (maxLength : 
     (s.take (maxLength - truncationNotice.length)).copy ++ truncationNotice
   else
     (s.take maxLength).copy
+
+#guard
+  let longOutput := String.ofList (List.replicate 10000 'x')
+  let out := String.truncateWithNotice longOutput "...(truncated)" 2000
+  out.length ≤ 2000

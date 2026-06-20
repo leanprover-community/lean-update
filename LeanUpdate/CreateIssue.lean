@@ -80,6 +80,32 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   let body := String.intercalate "\n" bodyList
   ⟨body, by apply sorry_proof⟩
 
+#guard
+  let result : PostUpdateValidationResult := {
+    buildResult := .error "build failed"
+    testResult? := none
+  }
+  let hasBuild := (createIssueBody result []).val.contains "Build Output"
+  let hasTest := (createIssueBody result []).val.contains "Test Output"
+  hasBuild && !hasTest
+
+#guard
+  let result : PostUpdateValidationResult := {
+    buildResult := .ok ()
+    testResult? := some (.error "test failed")
+  }
+  let hasBuild := (createIssueBody result []).val.contains "Build Output"
+  let hasTest := (createIssueBody result []).val.contains "Test Output"
+  !hasBuild && hasTest
+
+#guard
+  let longOutput := String.ofList (List.replicate 70000 'x')
+  let result : PostUpdateValidationResult := {
+    buildResult := .error longOutput
+    testResult? := some (.error longOutput)
+  }
+  (createIssueBody result []).val.length ≤ 65536
+
 /-- Create a GitHub issue describing an available Lean update. -/
 public def runCreateIssue : IO Unit := do
   let validationResult ← runPostUpdateValidation
