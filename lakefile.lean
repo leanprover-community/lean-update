@@ -7,13 +7,10 @@ package "LeanUpdate" where
 @[default_target]
 lean_lib «LeanUpdate» where
   -- add library configuration options here
-  globs := #[.one `LeanUpdate, .submodules `LeanUpdate]
+  globs := #[.submodules `LeanUpdate]
   leanOptions := #[
     ⟨`linter.missingDocs, true⟩
   ]
-
-lean_exe leanUpdate where
-  root := `Main
 
 @[test_driver]
 lean_exe updateDependenciesEnvTest where
