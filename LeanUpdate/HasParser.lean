@@ -40,17 +40,29 @@ where `α` has a `HasParser` instance.
 -/
 section
 
+/-- internal auxiliary function for parsing lists -/
+public def parseListAux [HasParser α] (input : List String) : Except String (List α) :=
+  let filterInput := input.filter (fun s => s != "")
+  have : filterInput.length ≤ input.length := by grind
+  match filterInput with
+  | [] => .ok []
+  | head :: rest => do
+    let headParsed ← parseAs α head
+    let restParsed ← parseListAux rest
+    .ok (headParsed :: restParsed)
+termination_by input.length
+
+/-- parse a string into a list of elements of type `α` -/
+public def parseList [HasParser α] (input : String) : Except String (List α) :=
+  let inner := input
+    |> (fun s : String => if s.startsWith "[" then s.drop 1 |>.copy else s)
+    |> (fun s : String => if s.endsWith "]" then s.dropEnd 1 |>.copy else s)
+    |> (String.replace · "," "")
+  let parts := inner.splitOn " "
+  parseListAux parts
+
 public instance [HasParser α] : HasParser (List α) where
-  parse s :=
-    let parts := s
-      |> (fun s : String => if s.startsWith "[" then s.drop 1 |>.copy else s)
-      |> (fun s : String => if s.endsWith "]" then s.dropEnd 1 |>.copy else s)
-      |>.splitOn ","
-    parts.foldlM (fun acc part =>
-      match parseAs α part.trimAscii.copy with
-      | .ok value => pure (acc ++ [value])
-      | .error err => throw s!"Failed to parse '{part}': {err}"
-    ) []
+  parse s := parseList s
 
 #guard
   let actual := parseAs (List Bool) "[true, false, true]"
@@ -60,6 +72,16 @@ public instance [HasParser α] : HasParser (List α) where
 #guard
   let actual := parseAs (List String) "foo, bar, baz"
   let expected := ["foo", "bar", "baz"]
+  actual.toOption == some expected
+
+#guard
+  let actual := parseAs (List String) "[]"
+  let expected := []
+  actual.toOption == some expected
+
+#guard
+  let actual := parseAs (List String) "   "
+  let expected := []
   actual.toOption == some expected
 
 end
