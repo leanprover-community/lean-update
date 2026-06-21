@@ -1,11 +1,13 @@
 module
 
 public import LeanUpdate.GitHub.Repository
-public import LeanUpdate.SizedStr
 public import LeanUpdate.IO
 public import LeanUpdate.Terminal
 
 namespace GitHub
+
+/-- the maximum length of a GitHub issue body -/
+public def Issue.maxBodyLength : Nat := 65536
 
 /-- GitHub issue -/
 public structure Issue where
@@ -13,7 +15,8 @@ public structure Issue where
   labelName : String
   labelColor : String
   repo : Repository
-  body : SizedStr 65536
+  /-- issue body. The maximum length of an issue body is **65536** characters. -/
+  body : String
 
 /-- create an issue -/
 public def Issue.create (issue : Issue) : IO Unit := do
@@ -23,7 +26,7 @@ public def Issue.create (issue : Issue) : IO Unit := do
       "issue", "create",
       "--repo", issue.repo.toString,
       "--title", issue.title,
-      "--body", issue.body.val,
+      "--body", issue.body,
       "--label", issue.labelName
     ]
   }

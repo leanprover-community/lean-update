@@ -2,15 +2,15 @@ module
 
 import Lean
 import LeanUpdate.GitHub.Action.Env
-import LeanUpdate.GitHub.Issue
+public import LeanUpdate.GitHub.Issue
 import LeanUpdate.Input
 import LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.GitHub.Repository
 public meta import LeanUpdate.PostUpdateValidation
-public meta import LeanUpdate.SizedStr
 public import LeanUpdate.CheckChanges
+public import LeanUpdate.String
 
-open IO Process System
+open IO Process System GitHub.Issue
 
 /-- get the issue label name -/
 public def PostUpdateValidationResult.createIssueLabelName (result : PostUpdateValidationResult) : String :=
@@ -34,7 +34,7 @@ public def PostUpdateValidationResult.createLabelColor (result : PostUpdateValid
     "D73A4A"
 
 /-- get the issue body -/
-public def createIssueBody (result : PostUpdateValidationResult) (changedFiles : List String) : SizedStr 65536 := Id.run do
+public def createIssueBody (result : PostUpdateValidationResult) (changedFiles : List String) : String := Id.run do
   let header :=
     if result.isSuccess then
       "Update availabe and validated successfully."
@@ -78,15 +78,16 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
       ]
       bodyList := bodyList ++ testResultMsg
   let body := String.intercalate "\n" bodyList
-  ⟨body, by apply sorry_proof⟩
+
+  return body
 
 #guard
   let result : PostUpdateValidationResult := {
     buildResult := .error "build failed"
     testResult? := none
   }
-  let hasBuild := (createIssueBody result []).val.contains "Build Output"
-  let hasTest := (createIssueBody result []).val.contains "Test Output"
+  let hasBuild := (createIssueBody result []).contains "Build Output"
+  let hasTest := (createIssueBody result []).contains "Test Output"
   hasBuild && !hasTest
 
 #guard
@@ -94,8 +95,8 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
     buildResult := .ok ()
     testResult? := some (.error "test failed")
   }
-  let hasBuild := (createIssueBody result []).val.contains "Build Output"
-  let hasTest := (createIssueBody result []).val.contains "Test Output"
+  let hasBuild := (createIssueBody result []).contains "Build Output"
+  let hasTest := (createIssueBody result []).contains "Test Output"
   !hasBuild && hasTest
 
 #guard
@@ -104,7 +105,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
     buildResult := .error longOutput
     testResult? := some (.error longOutput)
   }
-  (createIssueBody result []).val.length ≤ 65536
+  (createIssueBody result []).length ≤ 65536
 
 /-- Create a GitHub issue describing an available Lean update. -/
 public def runCreateIssue : IO Unit := do
