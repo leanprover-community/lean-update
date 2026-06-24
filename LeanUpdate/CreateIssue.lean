@@ -40,7 +40,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
     if result.isSuccess then
       "Update availabe and validated successfully."
     else
-      "Try `lake update` and then investigate why this update causes `lake build` or `lake test` to fail."
+      "Try `lake update` and then investigate why this update causes `lake build`, `lake test`, or `lake lint` to fail."
   let mut bodyList := [header]
 
   let changedFilesMsg : List String :=
@@ -52,9 +52,10 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   bodyList := bodyList ++ changedFilesMsg
 
   let truncationNotice := "...(truncated)"
+  let outputTruncationLimit := 20000
   if !result.buildResult.isOk then
     let buildOutput := result.buildResult.toString
-      |> (String.truncateWithNotice · truncationNotice 32000)
+      |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
     let buildResultMsg := [
       "## Build Output",
       "",
@@ -68,7 +69,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   if let some testResult := result.testResult? then
     if !Except.isOk testResult then
       let testOutput := testResult.toString
-        |> (String.truncateWithNotice · truncationNotice 32000)
+        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
       let testResultMsg := [
         "## Test Output",
         "",
@@ -78,6 +79,20 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
         ""
       ]
       bodyList := bodyList ++ testResultMsg
+
+  if let some lintResult := result.lintResult? then
+    if !Except.isOk lintResult then
+      let lintOutput := lintResult.toString
+        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+      let lintResultMsg := [
+        "## Lint Output",
+        "",
+        "````",
+        lintOutput,
+        "````",
+        ""
+      ]
+      bodyList := bodyList ++ lintResultMsg
   let body := String.intercalate "\n" bodyList
 
   return body
@@ -86,25 +101,41 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   let result : PostUpdateValidationResult := {
     buildResult := .error "build failed"
     testResult? := none
+    lintResult? := none
   }
   let hasBuild := (createIssueBody result []).contains "Build Output"
   let hasTest := (createIssueBody result []).contains "Test Output"
-  hasBuild && !hasTest
+  let hasLint := (createIssueBody result []).contains "Lint Output"
+  hasBuild && !hasTest && !hasLint
 
 #guard
   let result : PostUpdateValidationResult := {
     buildResult := .ok ()
     testResult? := some (.error "test failed")
+    lintResult? := none
   }
   let hasBuild := (createIssueBody result []).contains "Build Output"
   let hasTest := (createIssueBody result []).contains "Test Output"
-  !hasBuild && hasTest
+  let hasLint := (createIssueBody result []).contains "Lint Output"
+  !hasBuild && hasTest && !hasLint
+
+#guard
+  let result : PostUpdateValidationResult := {
+    buildResult := .ok ()
+    testResult? := none
+    lintResult? := some (.error "lint failed")
+  }
+  let hasBuild := (createIssueBody result []).contains "Build Output"
+  let hasTest := (createIssueBody result []).contains "Test Output"
+  let hasLint := (createIssueBody result []).contains "Lint Output"
+  !hasBuild && !hasTest && hasLint
 
 #guard
   let longOutput := String.ofList (List.replicate 70000 'x')
   let result : PostUpdateValidationResult := {
     buildResult := .error longOutput
     testResult? := some (.error longOutput)
+    lintResult? := some (.error longOutput)
   }
   (createIssueBody result []).length ≤ 65536
 

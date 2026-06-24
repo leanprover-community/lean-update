@@ -20,6 +20,8 @@ public def main (args : List String) : IO Unit := do
       IO.eprintln err
     if let some (.error err) := result.testResult? then
       IO.eprintln err
+    if let some (.error err) := result.lintResult? then
+      IO.eprintln err
     if result.isFailure then
       throw <| IO.userError "post-update validation failed"
   | _ => throw <| IO.userError "invalid arguments of leanUpdate"

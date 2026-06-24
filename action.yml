@@ -36,9 +36,9 @@ inputs:
     required: false
     default: "tagged"
 
-  # ------------------------------------ #
-  # run `lake update` and run build/test #
-  # ------------------------------------ #
+  # ----------------------------------------- #
+  # run `lake update` and run build/test/lint #
+  # ----------------------------------------- #
   legacy_update:
     description: |
       If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
