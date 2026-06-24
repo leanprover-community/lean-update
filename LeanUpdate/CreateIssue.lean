@@ -8,6 +8,7 @@ import LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.GitHub.Repository
 public meta import LeanUpdate.PostUpdateValidation
 public import LeanUpdate.CheckChanges
+public meta import LeanUpdate.String
 public import LeanUpdate.String
 
 open IO Process System GitHub.Issue
