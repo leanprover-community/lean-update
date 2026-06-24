@@ -5,6 +5,13 @@ on:
     branches:
       - main
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+      - edited
     branches:
       - main
   workflow_dispatch:
@@ -25,6 +32,27 @@ jobs:
 
       - name: This update should succeed
         if: steps.update.outputs.result != 'update-success'
+        run: exit 1
+
+  mathlib_dependency_e2e_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package with mathlib dependency
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "silent"
+          lake_package_directory: "./Fixtures/MathlibDep"
+
+      - name: This update should succeed
+        if: steps.update.outputs.result != 'update-success'
+        run: exit 1
+
+      - name: The fixture should depend on mathlib
+        if: steps.update.outputs.has_dependency != 'true'
         run: exit 1
 
   success_nightly_test:
@@ -72,6 +100,57 @@ jobs:
         with:
           on_update_fails: "silent"
           lake_package_directory: "./Fixtures/Fail"
+
+      - name: This update should fail
+        if: steps.update.outputs.result != 'update-fail'
+        run: exit 1
+
+  test_driver_failure_e2e_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package
+        id: update
+        uses: ./
+        with:
+          on_update_fails: "silent"
+          lake_package_directory: "./Fixtures/TestFail"
+
+      - name: This update should fail
+        if: steps.update.outputs.result != 'update-fail'
+        run: exit 1
+
+      - name: The fixture should still build
+        run: lake build
+        working-directory: ./Fixtures/TestFail
+
+  lint_driver_failure_e2e_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update Lean package
+        id: update
+        uses: ./
+        with:
+          on_update_succeeds: "silent"
+          on_update_fails: "silent"
+          lake_package_directory: "./Fixtures/LintFail"
+
+      - name: The fixture should still build
+        run: lake build
+        working-directory: ./Fixtures/LintFail
+
+      - name: The fixture lint should fail
+        run: |
+          if lake lint; then
+            echo "Expected lake lint to fail"
+            exit 1
+          fi
+        working-directory: ./Fixtures/LintFail
 
       - name: This update should fail
         if: steps.update.outputs.result != 'update-fail'

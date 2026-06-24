@@ -36,9 +36,9 @@ inputs:
     required: false
     default: "tagged"
 
-  # ------------------------------------ #
-  # run `lake update` and run build/test #
-  # ------------------------------------ #
+  # ----------------------------------------- #
+  # run `lake update` and run build/test/lint #
+  # ----------------------------------------- #
   legacy_update:
     description: |
       If set to `true`, executes `lake -R -Kenv=dev update` instead of `lake update`.
@@ -50,8 +50,7 @@ inputs:
     default: "false"
   build_args:
     description: |
-      This GitHub Action uses leanprover/lean-action to build and test the repository.
-      This parameter determines what to pass to the build-args argument of leanprover/lean-action.
+      Build arguments to pass to `lake build` during post-update validation.
     required: false
     default: "--log-level=warning"
 
@@ -60,7 +59,7 @@ inputs:
   # ------------------------- #
   on_update_succeeds:
     description: |
-      What to do when an update is available and the build is successful.
+      What to do when an update is available and post-update validation is successful.
       Allowed values:
         * `silent`: Do nothing
         * `commit`: directly commit the updated files
@@ -71,22 +70,22 @@ inputs:
     default: "pr"
   on_update_fails:
     description: |
-      What to do when an update is available and the build fails.
+      What to do when an update is available and post-update validation fails.
       Allowed values:
         * `silent`: Do nothing
         * `issue`: notify the user by creating an issue. No new issue will be created if one already exists.
-        * `pr`: notify the user by creating a pull request. No new PR will be created if one already exists.
+        * `fail`: fail the action.
       Default: `issue`.
     required: false
     default: "issue"
   update_if_modified:
     description: |
       Specifies which files, when updated during `lake update`, will cause the action to update code or notify the user.
-      This option does not affect the behavior when the build, test, or lint fail after `lake update`.
+      This option does not affect the behavior when post-update validation fails after `lake update`.
       Allowed values:
         * `lean-toolchain`:
           If `lean-toolchain` is specified, this GitHub Action will skip updates unless the Lean version is updated.
-          Here, "skipping updates" means "not attempting to update code or send notifications when the build, test, or lint succeed after lake update".
+          Here, "skipping updates" means "not attempting to update code or send notifications when post-update validation succeeds after lake update".
         * `lake-manifest.json`: if `lake-manifest.json` is specified, this GitHub Action will perform an update if any dependent package is updated.
       Default: `lake-manifest.json`
     required: false
@@ -108,8 +107,8 @@ outputs:
 
       Description of each value:
         * `no-update`: No update was available.
-        * `update-success`: An update was available and lean-action step was successful.
-        * `update-fail`: An update was available but the lean-action step failed.
+        * `update-success`: An update was available and post-update validation was successful.
+        * `update-fail`: An update was available but post-update validation failed.
     value: ${{ steps.record-result.outputs.outcome }}
   latest_lean:
     description: |
@@ -124,8 +123,8 @@ outputs:
     description: |
       Indicates whether there is an event worth notifying the user about.
       Returns `true` in the following cases:
-        * When updates are available and the build succeeds. However, if `update_if_modified` is set to `lean-toolchain`, this is only true when the Lean version has been updated.
-        * When updates are available and the build fails.
+        * When updates are available and post-update validation succeeds. However, if `update_if_modified` is set to `lean-toolchain`, this is only true when the Lean version has been updated.
+        * When updates are available and post-update validation fails.
       Returns `false` in all other cases.
     value: ${{ steps.record-notify.outputs.notify }}
 
@@ -180,16 +179,33 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
 
-    - name: Try to build lean if something was updated
+    - name: Prepare Lean and get Mathlib cache
       if: env.LEAN_UPDATE_FILES_CHANGED == 'true'
-      id: build-lean
+      id: prepare-lean
       continue-on-error: true
       uses: leanprover/lean-action@v1
       with:
-        build-args: ${{ inputs.build_args }}
+        auto-config: "false"
+        build: "false"
+        test: "false"
+        lint: "false"
+        use-github-cache: "false"
         lake-package-directory: ${{ inputs.lake_package_directory }}
       env:
         GH_TOKEN: ${{ github.token }}
+
+    - name: Validate updated Lean package
+      if: env.LEAN_UPDATE_FILES_CHANGED == 'true'
+      id: validate-update
+      continue-on-error: true
+      run: |
+        : Validate updated Lean package
+        lake exe leanUpdate validateUpdate
+      env:
+        BUILD_ARGS: ${{ inputs.build_args }}
+        LAKE_PACKAGE_DIRECTORY: ${{ inputs.lake_package_directory }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
 
     # -------------------------------- #
     # record the output of this action #
@@ -201,11 +217,11 @@ runs:
         if [ "${{ env.LEAN_UPDATE_FILES_CHANGED }}" == "false" ]; then
           echo "No update available"
           echo "outcome=no-update" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.build-lean.outcome }}" == "success" ]; then
-          echo "Update available and build successful"
+        elif [ "${{ steps.validate-update.outcome }}" == "success" ]; then
+          echo "Update available and validation successful"
           echo "outcome=update-success" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.build-lean.outcome }}" == "failure" ]; then
-          echo "Update available but build fails"
+        elif [ "${{ steps.validate-update.outcome }}" == "failure" ]; then
+          echo "Update available but validation fails"
           echo "outcome=update-fail" >> $GITHUB_OUTPUT
         fi
       shell: bash
@@ -217,11 +233,11 @@ runs:
         if [ "${{ env.LEAN_UPDATE_FILES_CHANGED }}" == "false" ]; then
           echo "No updates available, no need to notify"
           echo "notify=false" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.build-lean.outcome }}" == "success" ] && [ "${{ env.LEAN_UPDATE_DO_UPDATE }}" == "true" ]; then
-          echo "Updates available and build successful - should notify"
+        elif [ "${{ steps.validate-update.outcome }}" == "success" ] && [ "${{ env.LEAN_UPDATE_DO_UPDATE }}" == "true" ]; then
+          echo "Updates available and validation successful - should notify"
           echo "notify=true" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.build-lean.outcome }}" == "failure" ]; then
-          echo "Updates available but build failed - should notify"
+        elif [ "${{ steps.validate-update.outcome }}" == "failure" ]; then
+          echo "Updates available but validation failed - should notify"
           echo "notify=true" >> $GITHUB_OUTPUT
         else
           echo "No need to notify in this case"
@@ -232,8 +248,8 @@ runs:
     # ------------------------- #
     # when update is successful #
     # ------------------------- #
-    - name: Open PR if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' &&
+    - name: Open PR if post-update validation was successful
+      if: steps.validate-update.outcome == 'success' &&
           inputs.on_update_succeeds == 'pr' &&
           env.LEAN_UPDATE_DO_UPDATE == 'true' &&
           env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'true'
@@ -249,8 +265,8 @@ runs:
         branch: auto-update-lean/patch
         labels: "auto-update-lean"
 
-    - name: Open PR if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' &&
+    - name: Open PR if post-update validation was successful
+      if: steps.validate-update.outcome == 'success' &&
           inputs.on_update_succeeds == 'pr' &&
           env.LEAN_UPDATE_DO_UPDATE == 'true' &&
           env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'false'
@@ -262,11 +278,11 @@ runs:
         branch: auto-update-lean/patch
         labels: "auto-update-lean"
 
-    - name: Open issue if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'issue' && env.LEAN_UPDATE_DO_UPDATE == 'true'
+    - name: Open issue if post-update validation was successful
+      if: steps.validate-update.outcome == 'success' && inputs.on_update_succeeds == 'issue' && env.LEAN_UPDATE_DO_UPDATE == 'true'
       run: |
-        : Open issue if the updated lean build was successful
-        lake exe leanUpdate createIssue success
+        : Open issue if post-update validation was successful
+        lake exe leanUpdate createIssue
       env:
         # Could be best to use the default token here
         GH_TOKEN: ${{ inputs.token }}
@@ -275,8 +291,8 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
 
-    - name: Commit update if the updated lean build was successful
-      if: steps.build-lean.outcome == 'success' && inputs.on_update_succeeds == 'commit' && env.LEAN_UPDATE_DO_UPDATE == 'true'
+    - name: Commit update if post-update validation was successful
+      if: steps.validate-update.outcome == 'success' && inputs.on_update_succeeds == 'commit' && env.LEAN_UPDATE_DO_UPDATE == 'true'
       uses: EndBug/add-and-commit@v10
       with:
         default_author: github_actions
@@ -287,11 +303,11 @@ runs:
     # ----------------- #
     # when update fails #
     # ----------------- #
-    - name: Open issue if the updated lean build fails
-      if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'issue'
+    - name: Open issue if post-update validation fails
+      if: steps.validate-update.outcome == 'failure' && inputs.on_update_fails == 'issue'
       run: |
-        : Open issue if the updated lean build fails
-        lake exe leanUpdate createIssue failure
+        : Open issue if post-update validation fails
+        lake exe leanUpdate createIssue
       env:
         GH_TOKEN: ${{ inputs.token }}
         BUILD_ARGS: ${{ inputs.build_args }}
@@ -299,10 +315,10 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
 
-    - name: Action fails if the updated lean build fails
-      if: steps.build-lean.outcome == 'failure' && inputs.on_update_fails == 'fail'
+    - name: Action fails if post-update validation fails
+      if: steps.validate-update.outcome == 'failure' && inputs.on_update_fails == 'fail'
       run: |
-        : Action fails if the updated lean build fails
+        : Action fails if post-update validation fails
         exit 1
       shell: bash
 

@@ -1,0 +1,15 @@
+name = "TestFail"
+version = "0.1.0"
+defaultTargets = ["testFail"]
+testDriver = "testFailTest"
+
+[[lean_lib]]
+name = "TestFail"
+
+[[lean_exe]]
+name = "testFail"
+root = "Main"
+
+[[lean_exe]]
+name = "testFailTest"
+root = "TestMain"

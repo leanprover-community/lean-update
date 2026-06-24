@@ -1,0 +1,15 @@
+name = "LintFail"
+version = "0.1.0"
+defaultTargets = ["lintFail"]
+lintDriver = "lintFailLint"
+
+[[lean_lib]]
+name = "LintFail"
+
+[[lean_exe]]
+name = "lintFail"
+root = "Main"
+
+[[lean_exe]]
+name = "lintFailLint"
+root = "LintMain"

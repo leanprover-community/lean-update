@@ -9,6 +9,7 @@ public meta import Lake.Util.Version
 public import Lake.Util.Version
 public import Std.Time
 public import LeanUpdate.Terminal
+public import LeanUpdate.FindDep
 
 open IO Process Lean Std Time
 
@@ -61,25 +62,21 @@ public def fetchAllLeanReleaseJson (kind : ReleaseKindToFetch) : IO Json := do
   match kind with
   | .nightly =>
     let fetchUrl := "https://release.lean-lang.org/"
-    let out ← IO.Process.output {
+    let out ← IO.Process.successOutput {
       cmd := "curl",
       args := #["-fsSL", fetchUrl],
     }
     let outStr := out.stdout.trimAscii.copy
-    if out.exitCode != 0 then
-      throw <| IO.userError s!"Failed to fetch release info from {fetchUrl}: \n{out.stderr}"
     let json ← IO.ofExcept <| Json.parse outStr
     let nightlyJson ← IO.ofExcept <| json.getObjVal? "nightly"
     let simpleJson ← IO.ofExcept <| normalizeNightlyJson nightlyJson
     return simpleJson
   | .tagged =>
-    let out ← IO.Process.output {
+    let out ← IO.Process.successOutput {
       cmd := "gh",
       args := #["release", "list", "--repo", "leanprover/lean4", "--limit", "50", "--json", "name,createdAt"],
     }
     let outStr := out.stdout.trimAscii.copy
-    if out.exitCode != 0 then
-      throw <| IO.userError s!"Failed to fetch release info from GitHub: \n{out.stderr}"
     let json ← IO.ofExcept <| Json.parse outStr
     return json
 
@@ -189,7 +186,7 @@ public def runUpdateLeanToolchain : IO Unit := do
   GitHub.Action.writeGHOutput "latest_lean" latestRelease.toString
   GitHub.Action.writeGHEnv "LATEST_LEAN" latestRelease.toString
 
-  let hasDependency ← GitHub.Action.readGHEnvAs! "HAS_DEPENDENCY" (expectedType := Bool)
+  let hasDependency ← LeanUpdate.hasDependency
   match updateLeanToolchain, hasDependency with
   | .auto, false =>
     let targetLakePackageDir ← getTargetLakePackageDirectory
