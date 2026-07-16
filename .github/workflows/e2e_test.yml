@@ -28,6 +28,7 @@ jobs:
         uses: ./
         with:
           on_update_succeeds: "silent"
+          on_update_fails: "silent"
           lake_package_directory: "./Fixtures/SmokeSuccess"
 
       - name: This update should succeed
@@ -45,6 +46,7 @@ jobs:
         uses: ./
         with:
           on_update_succeeds: "silent"
+          on_update_fails: "silent"
           lake_package_directory: "./Fixtures/MathlibDep"
 
       - name: This update should succeed
@@ -66,6 +68,7 @@ jobs:
         uses: ./
         with:
           on_update_succeeds: "silent"
+          on_update_fails: "silent"
           lake_package_directory: "./Fixtures/SmokeSuccess"
           release_kind_to_fetch: "nightly"
 
