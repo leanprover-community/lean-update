@@ -15,6 +15,26 @@ public def IO.getEnv! (key : String) : IO String := do
 
 namespace IO.Process
 
+def elanLakeName : String :=
+  if Platform.isWindows then
+    "lake.exe"
+  else
+    "lake"
+
+def elanHome : IO FilePath := do
+  if let some home ← IO.getEnv "ELAN_HOME" then
+    return FilePath.mk home
+
+  let homeVar :=
+    if Platform.isWindows then
+      "USERPROFILE"
+    else
+      "HOME"
+  return FilePath.mk (← IO.getEnv! homeVar) / ".elan"
+
+def elanLake : IO FilePath := do
+  return (← elanHome) / "bin" / elanLakeName
+
 /--
 Unset Lean/Lake toolchain-specific variables before running `lake update` in
 the target package. The lean-update executable itself runs under the action
@@ -40,10 +60,15 @@ public def cleanLakeEnv : Array (String × Option String) :=
     ("LEAN_SYSROOT", none)
   ]
 
-/-- Run `lake` in a target package directory with Lean/Lake toolchain env cleared. -/
-public def lakeOutput (cwd : FilePath) (args : Array String) : IO Output :=
+/--
+Run `lake` through the Elan proxy in a target package directory with Lean/Lake
+toolchain environment variables cleared. Resolving the proxy explicitly avoids
+using a Lake executable from the action package's toolchain through `PATH`.
+-/
+public def lakeOutput (cwd : FilePath) (args : Array String) : IO Output := do
+  let lake ← elanLake
   IO.Process.output {
-    cmd := "lake"
+    cmd := lake.toString
     args := args
     cwd := some cwd
     env := cleanLakeEnv

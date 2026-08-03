@@ -56,41 +56,30 @@ public def runAsFakeLake (args : List String) : IO Unit := do
 public def runInner : IO Unit := do
   runUpdateDependencies
 
-def pathWithFakeLake (binDir : FilePath) : BaseIO String := do
-  let path ←
-    if Platform.isWindows then
-      match (← IO.getEnv "Path") with
-      | some path => pure path
-      | none => pure ((← IO.getEnv "PATH").getD "")
-    else
-      pure ((← IO.getEnv "PATH").getD "")
-  pure <| SearchPath.toString (binDir :: SearchPath.parse path)
-
 /--
 Regression test for [issue #237](https://github.com/leanprover-community/lean-update/issues/237).
 
-The test sets up a fake `lake` executable and then starts the test driver again
+The test sets up a fake Elan `lake` proxy and then starts the test driver again
 as `inner` with stale Lean/Lake toolchain variables in the environment. The
-inner process calls `runUpdateDependencies`; its `lake update` subprocess
-resolves to the test driver's `update` mode, which fails if those toolchain
-variables leaked through.
+inner process calls `runUpdateDependencies`; its `lake update` subprocess runs
+the test driver's `update` mode, which fails if those toolchain variables leaked
+through.
 -/
 public def test : IO Unit := do
   IO.FS.withTempDir fun tempDir => do
-    let binDir := tempDir / "bin"
+    let elanHome := tempDir / "elan"
+    let binDir := elanHome / "bin"
     let targetDir := tempDir / "target"
     IO.FS.createDirAll binDir
     IO.FS.createDirAll targetDir
     installFakeLake binDir
 
     let currentExe ← IO.appPath
-    let path ← pathWithFakeLake binDir
     let out ← IO.Process.output {
       cmd := currentExe.toString
       args := #["inner"]
       env := #[
-        ("PATH", some path),
-        ("Path", some path),
+        ("ELAN_HOME", some elanHome.toString),
         ("LAKE_PACKAGE_DIRECTORY", some targetDir.toString),
         ("LEGACY_UPDATE", some "false"),
         ("GITHUB_WORKSPACE", none)
