@@ -11,11 +11,15 @@ lean_lib «LeanUpdate» where
   leanOptions := #[
     ⟨`linter.missingDocs, true⟩
   ]
+  requiresModuleSystem := true
 
 lean_exe leanUpdate where
   root := `Main
   supportInterpreter := true
 
+lean_lib «LeanUpdateTest» where
+  globs := #[.submodules `Test]
+
 @[test_driver]
-lean_exe updateDependenciesEnvTest where
-  root := `Test.UpdateDependenciesEnv
+lean_exe run_test where
+  root := `Test.Main

@@ -43,7 +43,7 @@ def installFakeLake (binDir : FilePath) : IO Unit := do
   unless Platform.isWindows do
     IO.setAccessRights fakeLake executableRights
 
-def runAsFakeLake (args : List String) : IO Unit := do
+public def runAsFakeLake (args : List String) : IO Unit := do
   unless args == ["update"] do
     throw <| IO.userError s!"unexpected lake arguments: {args}"
 
@@ -53,7 +53,7 @@ def runAsFakeLake (args : List String) : IO Unit := do
 
   IO.println "fake lake update ran"
 
-def runInner : IO Unit := do
+public def runInner : IO Unit := do
   runUpdateDependencies
 
 def pathWithFakeLake (binDir : FilePath) : BaseIO String := do
@@ -66,7 +66,16 @@ def pathWithFakeLake (binDir : FilePath) : BaseIO String := do
       pure ((← IO.getEnv "PATH").getD "")
   pure <| SearchPath.toString (binDir :: SearchPath.parse path)
 
-def runOuter : IO Unit := do
+/--
+Regression test for [issue #237](https://github.com/leanprover-community/lean-update/issues/237).
+
+The test sets up a fake `lake` executable and then starts the test driver again
+as `inner` with stale Lean/Lake toolchain variables in the environment. The
+inner process calls `runUpdateDependencies`; its `lake update` subprocess
+resolves to the test driver's `update` mode, which fails if those toolchain
+variables leaked through.
+-/
+public def test : IO Unit := do
   IO.FS.withTempDir fun tempDir => do
     let binDir := tempDir / "bin"
     let targetDir := tempDir / "target"
@@ -92,18 +101,3 @@ def runOuter : IO Unit := do
       throw <| IO.userError s!"updateDependencies should not leak toolchain variables to lake update\nstdout:\n{out.stdout}\nstderr:\n{out.stderr}"
 
 end LeanUpdateTest.UpdateDependenciesEnv
-
-/--
-Regression test for [issue #237](https://github.com/leanprover-community/lean-update/issues/237).
-
-The default invocation sets up a fake `lake` executable and then starts this
-same executable again as `inner` with stale Lean/Lake toolchain variables in the
-environment. The inner process calls `runUpdateDependencies`; its `lake update`
-subprocess resolves to this executable's `update` mode, which fails if those
-toolchain variables leaked through.
--/
-public def main (args : List String) : IO Unit := do
-  match args with
-  | ["inner"] => LeanUpdateTest.UpdateDependenciesEnv.runInner
-  | ["update"] => LeanUpdateTest.UpdateDependenciesEnv.runAsFakeLake args
-  | _ => LeanUpdateTest.UpdateDependenciesEnv.runOuter
