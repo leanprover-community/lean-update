@@ -1,4 +1,3 @@
 /.lake
 tmp/*
 !tmp/.gitkeep
-RunCanaryTest.lean
