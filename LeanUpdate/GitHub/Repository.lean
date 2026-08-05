@@ -49,13 +49,13 @@ public def Repository.createLabel (repo : Repository) (labelName labelColor desc
   }
   IO.println s!"Created label '{labelName}' in repository {repo}"
 
-/-- Create a GitHub label if it does not already exist in a repository. -/
+/-- Create a GitHub label if it does not already exist in a repository.
+This is an idempotent version of `Repository.createLabel` -/
 public def Repository.createLabelIdem (repo : Repository) (labelName labelColor description : String) : IO Unit := do
   if !(← repo.hasLabel labelName) then
     repo.createLabel labelName labelColor description
 
-/-- Check if a GitHub repository has an open issue with a specific label.
-This is an idempotent version of `Repository.createLabel` -/
+/-- Check if a GitHub repository has an open issue with a specific label. -/
 public def Repository.hasOpenIssueWithLabel (repo : Repository) (labelName : String) : IO Bool := do
   let out ← IO.Process.successOutput {
     cmd := "gh"
