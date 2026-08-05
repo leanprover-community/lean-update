@@ -41,14 +41,17 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
       "Update availabe and validated successfully."
     else
       "Try `lake update` and then investigate why this update causes `lake build`, `lake test`, or `lake lint` to fail."
-  let mut bodyList := [header]
+  let mut bodyList := [header, ""]
 
   let changedFilesMsg : List String :=
     match changedFiles with
     | [] => []
     | _ =>
-      let changedFileHeader := ["Files changed in update:", "",]
-      changedFileHeader ++ changedFiles.map (fun file => s!"- {file}") ++ [""]
+      let changedFileHeader := [
+        "## Files changed",
+        "",
+      ]
+      changedFileHeader ++ changedFiles.map (fun file => s!"- `{file}`") ++ [""]
   bodyList := bodyList ++ changedFilesMsg
 
   let truncationNotice := "...(truncated)"
@@ -138,6 +141,45 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
     lintResult? := some (.error longOutput)
   }
   (createIssueBody result []).length ≤ 65536
+
+/--
+info: Try `lake update` and then investigate why this update causes `lake build`, `lake test`, or `lake lint` to fail.
+
+## Files changed
+
+- `sample.txt`
+- `another.txt`
+
+## Build Output
+
+````
+Sample build error message
+````
+
+## Test Output
+
+````
+Sample test error message
+````
+
+## Lint Output
+
+````
+Sample lint error message
+````
+-/
+#guard_msgs in
+#eval
+  let sampleBuildResult : BuildResult := .error "Sample build error message"
+  let sampleTestResult : Except String Unit := .error "Sample test error message"
+  let sampleLintResult : Except String Unit := .error "Sample lint error message"
+  let result : PostUpdateValidationResult := {
+    buildResult := sampleBuildResult
+    testResult? := some sampleTestResult
+    lintResult? := some sampleLintResult
+  }
+  let body := createIssueBody result ["sample.txt", "another.txt"]
+  f!"{body}"
 
 /-- Create a GitHub issue describing an available Lean update. -/
 public def runCreateIssue : IO Unit := do
