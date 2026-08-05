@@ -11,7 +11,6 @@ lean_lib «LeanUpdate» where
   leanOptions := #[
     ⟨`linter.missingDocs, true⟩
   ]
-  requiresModuleSystem := true
 
 lean_exe leanUpdate where
   root := `Main

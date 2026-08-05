@@ -24,7 +24,7 @@ public def orange (s : String) : String :=
 public def blue (s : String) : String :=
   s!"\x1b[94m{s}\x1b[0m"
 
-/-- add header for log messages -/
+/-- add function name header for log messages -/
 syntax "log%" term : term
 
 macro_rules

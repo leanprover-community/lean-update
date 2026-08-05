@@ -4,12 +4,11 @@ import Lean
 import LeanUpdate.GitHub.Action.Env
 public import LeanUpdate.GitHub.Issue
 import LeanUpdate.Input
-import LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.GitHub.Repository
+public import      LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.PostUpdateValidation
 public import LeanUpdate.CheckChanges
-public meta import LeanUpdate.String
-public import LeanUpdate.String
+import all LeanUpdate.String
 
 open IO Process System GitHub.Issue
 
@@ -41,21 +40,24 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
       "Update availabe and validated successfully."
     else
       "Try `lake update` and then investigate why this update causes `lake build`, `lake test`, or `lake lint` to fail."
-  let mut bodyList := [header]
+  let mut bodyList := [header, ""]
 
   let changedFilesMsg : List String :=
     match changedFiles with
     | [] => []
     | _ =>
-      let changedFileHeader := ["Files changed in update:", "",]
-      changedFileHeader ++ changedFiles.map (fun file => s!"- {file}") ++ [""]
+      let changedFileHeader := [
+        "## Files changed",
+        "",
+      ]
+      changedFileHeader ++ changedFiles.map (fun file => s!"- `{file}`") ++ [""]
   bodyList := bodyList ++ changedFilesMsg
 
   let truncationNotice := "...(truncated)"
   let outputTruncationLimit := 20000
   if !result.buildResult.isOk then
     let buildOutput := result.buildResult.toString
-      |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+      |> (String.truncate · truncationNotice outputTruncationLimit)
     let buildResultMsg := [
       "## Build Output",
       "",
@@ -69,7 +71,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   if let some testResult := result.testResult? then
     if !Except.isOk testResult then
       let testOutput := testResult.toString
-        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+        |> (String.truncate · truncationNotice outputTruncationLimit)
       let testResultMsg := [
         "## Test Output",
         "",
@@ -83,7 +85,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   if let some lintResult := result.lintResult? then
     if !Except.isOk lintResult then
       let lintOutput := lintResult.toString
-        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+        |> (String.truncate · truncationNotice outputTruncationLimit)
       let lintResultMsg := [
         "## Lint Output",
         "",
@@ -138,6 +140,45 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
     lintResult? := some (.error longOutput)
   }
   (createIssueBody result []).length ≤ 65536
+
+/--
+info: Try `lake update` and then investigate why this update causes `lake build`, `lake test`, or `lake lint` to fail.
+
+## Files changed
+
+- `sample.txt`
+- `another.txt`
+
+## Build Output
+
+````
+Sample build error message
+````
+
+## Test Output
+
+````
+Sample test error message
+````
+
+## Lint Output
+
+````
+Sample lint error message
+````
+-/
+#guard_msgs in
+#eval
+  let sampleBuildResult : BuildResult := .error "Sample build error message"
+  let sampleTestResult : Except String Unit := .error "Sample test error message"
+  let sampleLintResult : Except String Unit := .error "Sample lint error message"
+  let result : PostUpdateValidationResult := {
+    buildResult := sampleBuildResult
+    testResult? := some sampleTestResult
+    lintResult? := some sampleLintResult
+  }
+  let body := createIssueBody result ["sample.txt", "another.txt"]
+  f!"{body}"
 
 /-- Create a GitHub issue describing an available Lean update. -/
 public def runCreateIssue : IO Unit := do
