@@ -18,7 +18,8 @@ public structure Issue where
   /-- issue body. The maximum length of an issue body is **65536** characters. -/
   body : String
 
-/-- create an issue -/
+/-- Create an issue.
+This function is a simple wrapper of the GitHub CLI. -/
 public def Issue.create (issue : Issue) : IO Unit := do
   let _out ← IO.Process.successOutput {
     cmd := "gh"
