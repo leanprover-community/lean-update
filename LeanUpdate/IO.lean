@@ -86,8 +86,7 @@ public def SuccessOutput.stdout (so : SuccessOutput) : String := so.val.stdout
 -/
 public def successOutput (args : SpawnArgs) (input? : Option String := none) : IO SuccessOutput := do
   let out ← IO.Process.output args (input? := input?)
-  let cmdStr := args.cmd ++ " " ++ String.intercalate " " (args.args.toList)
-  IO.println s!"Ran process: {cmdStr}"
+  IO.println s!"Ran process: {args.cmd} {args.args.toList}"
 
   if h : out.exitCode != 0 then
     throw <| IO.userError s!"Process failed with exit code {out.exitCode}:\n{out.stderr}"
