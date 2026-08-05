@@ -4,12 +4,11 @@ import Lean
 import LeanUpdate.GitHub.Action.Env
 public import LeanUpdate.GitHub.Issue
 import LeanUpdate.Input
-import LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.GitHub.Repository
+public import      LeanUpdate.PostUpdateValidation
 public meta import LeanUpdate.PostUpdateValidation
 public import LeanUpdate.CheckChanges
-public meta import LeanUpdate.String
-public import LeanUpdate.String
+import all LeanUpdate.String
 
 open IO Process System GitHub.Issue
 
@@ -58,7 +57,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   let outputTruncationLimit := 20000
   if !result.buildResult.isOk then
     let buildOutput := result.buildResult.toString
-      |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+      |> (String.truncate · truncationNotice outputTruncationLimit)
     let buildResultMsg := [
       "## Build Output",
       "",
@@ -72,7 +71,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   if let some testResult := result.testResult? then
     if !Except.isOk testResult then
       let testOutput := testResult.toString
-        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+        |> (String.truncate · truncationNotice outputTruncationLimit)
       let testResultMsg := [
         "## Test Output",
         "",
@@ -86,7 +85,7 @@ public def createIssueBody (result : PostUpdateValidationResult) (changedFiles :
   if let some lintResult := result.lintResult? then
     if !Except.isOk lintResult then
       let lintOutput := lintResult.toString
-        |> (String.truncateWithNotice · truncationNotice outputTruncationLimit)
+        |> (String.truncate · truncationNotice outputTruncationLimit)
       let lintResultMsg := [
         "## Lint Output",
         "",
