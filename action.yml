@@ -293,7 +293,7 @@ runs:
 
     - name: Commit update if post-update validation was successful
       if: steps.validate-update.outcome == 'success' && inputs.on_update_succeeds == 'commit' && env.LEAN_UPDATE_DO_UPDATE == 'true'
-      uses: EndBug/add-and-commit@v11
+      uses: EndBug/add-and-commit@645ecc0dd0a57f4d86d26c0aa5fc42c0a856fbca # v11.0.0
       with:
         default_author: github_actions
       env:
