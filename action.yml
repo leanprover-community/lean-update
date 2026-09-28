@@ -183,7 +183,7 @@ runs:
       if: env.LEAN_UPDATE_FILES_CHANGED == 'true'
       id: prepare-lean
       continue-on-error: true
-      uses: leanprover/lean-action@v1
+      uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
       with:
         auto-config: "false"
         build: "false"
@@ -253,7 +253,7 @@ runs:
           inputs.on_update_succeeds == 'pr' &&
           env.LEAN_UPDATE_DO_UPDATE == 'true' &&
           env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'true'
-      uses: peter-evans/create-pull-request@v8
+      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
       with:
         title: "Updates available and ready to merge"
         body: |
@@ -270,7 +270,7 @@ runs:
           inputs.on_update_succeeds == 'pr' &&
           env.LEAN_UPDATE_DO_UPDATE == 'true' &&
           env.LEAN_UPDATE_LEAN_TOOLCHAIN_UPDATED == 'false'
-      uses: peter-evans/create-pull-request@v8
+      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
       with:
         title: "Updates available and ready to merge"
         body: ""
